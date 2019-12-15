@@ -202,13 +202,14 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#synchronous-responses">Synchronous Responses</a></li>
             <li><a href="#routing-processed-messages-back">Routing Processed Messages Back</a></li>
+            <li><a href="#returning-partially-processed-messages">Returning Partially Processed Messages</a></li>
             <li><a href="#routing-output-responses-back">Routing Output Responses Back</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
 <h1 id="synchronous-responses">Synchronous Responses</h1>
-<p>In a regular Benthos stream pipeline messages flow in one direction and
+<p>In a regular Benthos pipeline messages will flow in one direction and
 acknowledgements flow in the other:</p>
 <pre><code class="text">    ----------- Message -------------&gt;
 
@@ -217,8 +218,7 @@ Input (AMQP) -&gt; Processors -&gt; Output (AMQP)
     &lt;------- Acknowledgement ---------
 </code></pre>
 
-<p>For most Benthos input and output targets this is the only workflow available.
-However, Benthos has support for a number of protocols where this limitation is
+<p>However, Benthos has support for a number of protocols where this limitation is
 not the case.</p>
 <p>For example, HTTP is a request/response protocol, and so our <code>http_server</code> input
 is capable of returning a response payload after consuming a message from a
@@ -230,7 +230,7 @@ messages at the input level:</p>
 
 Input (HTTP Server) -&gt; Processors -&gt; Output (Sync Response)
 
-           &lt;------- Response Body ---------
+           &lt;--- Response Body (and ack) ---
 </code></pre>
 
 <h2 id="routing-processed-messages-back">Routing Processed Messages Back</h2>
@@ -273,6 +273,36 @@ response 'FOO BAR'.</p>
 <p>NOTE: It's safe to use these mechanisms even when combining multiple inputs with
 a broker, a response payload will always be routed back to the original source
 of the message.</p>
+<h2 id="returning-partially-processed-messages">Returning Partially Processed Messages</h2>
+<p>It's possible to set the state of a message to be the synchronous response
+before processing is finished by using the
+<a href="../processors/#sync_response"><code>sync_response</code> processor</a>. This allows you to further mutate
+the payload without changing the response returned to the input:</p>
+<pre><code class="yaml">input:
+  http_server:
+    path: /post
+
+pipeline:
+  processors:
+    - text:
+        operator: append
+        value: &quot; baz&quot;
+    - type: sync_response
+    - text:
+        operator: to_upper
+
+output:
+  kafka:
+    addresses: [ TODO:9092 ]
+    topic: foo_topic
+</code></pre>
+
+<p>Using the above example, sending a request 'foo bar' to the path <code>/post</code> passes
+the message 'FOO BAR BAZ' to the Kafka topic <code>foo_topic</code>, and also returns the
+response 'foo bar baz'.</p>
+<p>However, it is important to keep in mind that due to Benthos' strict delivery
+guarantees the response message will not actually be returned until the message
+has reached its output destination and an acknowledgement can be made.</p>
 <h2 id="routing-output-responses-back">Routing Output Responses Back</h2>
 <p>Some outputs, such as <a href="../outputs/#http_client"><code>http_client</code></a>, have the potential to
 propagate payloads received from their destination after sending a message back

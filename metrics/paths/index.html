@@ -196,6 +196,7 @@
             <li><a href="#processors">Processors</a></li>
             <li><a href="#conditions">Conditions</a></li>
             <li><a href="#output">Output</a></li>
+            <li><a href="#resources">Resources</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -241,12 +242,18 @@ prefixed with <code>pipeline.processor.N</code>, where N is the index.</p>
 <li><code>pipeline.processor.0.batch.sent</code></li>
 <li><code>pipeline.processor.0.error</code></li>
 </ul>
+<p>Processors that are children of other processors have paths that describe the
+full hierarchy, e.g. <code>pipeline.processor.0.if.0.1.count</code>. This can become a
+burden when the hierarchies are large and the paths are long. As an alternative
+it's possible to place processors within the <a href="#resources">resources section</a>
+which results in flattened named paths.</p>
 <h2 id="conditions">Conditions</h2>
-<ul>
-<li><code>condition.count</code></li>
-<li><code>condition.true</code></li>
-<li><code>condition.false</code></li>
-</ul>
+<p>Conditions provide <code>count</code>, <code>true</code> and <code>false</code> counters. They are either
+configured as direct children of other components and their path respects that,
+e.g.:</p>
+<p><code>pipeline.processors.0.condition.count</code></p>
+<p>Or they are a configured as a <a href="#resources">resource</a>, where their path is
+flattened using their name.</p>
 <h2 id="output">Output</h2>
 <ul>
 <li><code>output.count</code>: The number of times the output has attempted to send messages.</li>
@@ -257,6 +264,15 @@ prefixed with <code>pipeline.processor.N</code>, where N is the index.</p>
 <li><code>output.connection.up</code></li>
 <li><code>output.connection.failed</code></li>
 <li><code>output.connection.lost</code></li>
+</ul>
+<h2 id="resources">Resources</h2>
+<p>Components within the resources section have a metrics path containing their
+name:</p>
+<ul>
+<li><code>resource.cache.foo.latency</code></li>
+<li><code>resource.condition.bar.count</code></li>
+<li><code>resource.processor.baz.count</code></li>
+<li><code>resource.rate_limit.quz.count</code></li>
 </ul></div>
         </div>
 

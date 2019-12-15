@@ -233,7 +233,7 @@
             <li><a href="#lambda">lambda</a></li>
             <li><a href="#log">log</a></li>
             <li><a href="#merge_json">merge_json</a></li>
-            <li><a href="#metadata_1">metadata</a></li>
+            <li><a href="#metadata">metadata</a></li>
             <li><a href="#metric">metric</a></li>
             <li><a href="#noop">noop</a></li>
             <li><a href="#number">number</a></li>
@@ -244,17 +244,20 @@
             <li><a href="#process_map">process_map</a></li>
             <li><a href="#rate_limit">rate_limit</a></li>
             <li><a href="#redis">redis</a></li>
+            <li><a href="#sample">sample</a></li>
             <li><a href="#select_parts">select_parts</a></li>
             <li><a href="#sleep">sleep</a></li>
             <li><a href="#split_1">split</a></li>
             <li><a href="#sql">sql</a></li>
             <li><a href="#subprocess">subprocess</a></li>
             <li><a href="#switch">switch</a></li>
+            <li><a href="#sync_response">sync_response</a></li>
             <li><a href="#text">text</a></li>
             <li><a href="#throttle">throttle</a></li>
             <li><a href="#try">try</a></li>
             <li><a href="#unarchive">unarchive</a></li>
             <li><a href="#while">while</a></li>
+            <li><a href="#workflow">workflow</a></li>
             <li><a href="#xml">xml</a></li>
     </ul>
 </div></div>
@@ -344,6 +347,7 @@ In this case the <a href="#for_each"><code>for_each</code></a> processor can be 
 <li><a href="#process_map"><code>process_map</code></a></li>
 <li><a href="#rate_limit"><code>rate_limit</code></a></li>
 <li><a href="#redis"><code>redis</code></a></li>
+<li><a href="#resource"><code>resource</code></a></li>
 <li><a href="#sample"><code>sample</code></a></li>
 <li><a href="#select_parts"><code>select_parts</code></a></li>
 <li><a href="#sleep"><code>sleep</code></a></li>
@@ -351,11 +355,13 @@ In this case the <a href="#for_each"><code>for_each</code></a> processor can be 
 <li><a href="#sql"><code>sql</code></a></li>
 <li><a href="#subprocess"><code>subprocess</code></a></li>
 <li><a href="#switch"><code>switch</code></a></li>
+<li><a href="#sync_response"><code>sync_response</code></a></li>
 <li><a href="#text"><code>text</code></a></li>
 <li><a href="#throttle"><code>throttle</code></a></li>
 <li><a href="#try"><code>try</code></a></li>
 <li><a href="#unarchive"><code>unarchive</code></a></li>
 <li><a href="#while"><code>while</code></a></li>
+<li><a href="#workflow"><code>workflow</code></a></li>
 <li><a href="#xml"><code>xml</code></a></li>
 </ol>
 <h2 id="archive"><code>archive</code></h2>
@@ -879,6 +885,7 @@ http:
     rate_limit: &quot;&quot;
     retries: 3
     retry_period: 1s
+    successful_on: []
     timeout: 5s
     tls:
       client_certs: []
@@ -910,7 +917,15 @@ interpolations described <a href="../config_interpolation/#functions">here</a>.<
 response back into the original payload instead of replacing it entirely, you
 can use the <a href="#process_map"><code>process_map</code></a> or
  <a href="#process_field"><code>process_field</code></a> processors.</p>
-<h3 id="metadata">Metadata</h3>
+<h3 id="response-codes">Response Codes</h3>
+<p>Benthos considers any response code between 200 and 299 inclusive to indicate a
+successful response, you can add more success status codes with the field
+<code>successful_on</code>.</p>
+<p>When a request returns a response code within the <code>backoff_on</code> field
+it will be retried after increasing intervals.</p>
+<p>When a request returns a response code within the <code>drop_on</code> field it
+will not be reattempted and is immediately considered a failed request.</p>
+<h3 id="adding-metadata">Adding Metadata</h3>
 <p>If the request returns a response code this processor sets a metadata field
 <code>http_status_code</code> on all resulting messages.</p>
 <p>If the field <code>copy_response_headers</code> is set to <code>true</code> then any headers
@@ -1191,7 +1206,7 @@ into one single JSON document and then writes it to a new message at the end of
 the batch. Merged parts are removed unless <code>retain_parts</code> is set to
 true. The new merged message will contain the metadata of the first part to be
 merged.</p>
-<h2 id="metadata_1"><code>metadata</code></h2>
+<h2 id="metadata"><code>metadata</code></h2>
 <pre><code class="yaml">type: metadata
 metadata:
   key: example
@@ -1440,7 +1455,7 @@ field foo to an integer type with:</p>
   result_type: int
 </code></pre>
 
-<h4 id="metadata_2"><code>metadata</code></h4>
+<h4 id="metadata_1"><code>metadata</code></h4>
 <p>Extracts and sets a metadata value identified by the path field. If the field
 <code>result_type</code> is set to <code>discard</code> then the result of the processing stages
 is discarded and the original metadata value is left unchanged.</p>
@@ -1575,10 +1590,41 @@ Returns the cardinality of a set, or 0 if the key does not exist.
 
 Adds a new member to a set. Returns `1` if the member was added.
 
-## `sample`
+## `resource`
 
 ``` yaml
-type: sample
+type: resource
+resource: &quot;&quot;
+</code></pre>
+
+<p>Resource is a processor type that runs a processor resource by its name. This
+processor allows you to run the same configured processor resource in multiple
+places.</p>
+<p>Resource processors also have the advantage of name based metrics and logging.
+For example, the config:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    - jmespath:
+        query: foo
+</code></pre>
+
+<p>Is equivalent to:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    - resource: foo_proc
+
+resources:
+  processors:
+    foo_proc:
+      jmespath:
+        query: foo
+</code></pre>
+
+<p>But now the metrics path of the JMESPath processor will be
+<code>resources.processors.foo_proc</code>, this way of flattening observability
+labels becomes more useful as configs get larger and more nested.</p>
+<h2 id="sample"><code>sample</code></h2>
+<pre><code class="yaml">type: sample
 sample:
   retain: 10
   seed: 0
@@ -1733,6 +1779,18 @@ the next case should be executed after it (the default is <code>false</code>.)</
 <p>In order to switch each message of a batch individually use this processor with
 the <a href="#for_each"><code>for_each</code></a> processor.</p>
 <p>You can find a <a href="../conditions">full list of conditions here</a>.</p>
+<h2 id="sync_response"><code>sync_response</code></h2>
+<pre><code class="yaml">type: sync_response
+sync_response: {}
+</code></pre>
+
+<p>Adds the payload in its current state as a synchronous response to the input
+source, where it is dealt with according to that specific input type.</p>
+<p>For most inputs this mechanism is ignored entirely, in which case the sync
+response is dropped without penalty. It is therefore safe to use this processor
+even when combining input types that might not have support for sync responses.
+An example of an input able to utilise this is the <code>http_server</code>.</p>
+<p>For more information please read <a href="../sync_responses/">Synchronous Responses</a>.</p>
 <h2 id="text"><code>text</code></h2>
 <pre><code class="yaml">type: text
 text:
@@ -1893,6 +1951,35 @@ zero the loop is exited regardless of the condition result. If following a loop
 execution there are more than 1 message batches the condition is checked against
 the first batch only.</p>
 <p>You can find a <a href="../conditions">full list of conditions here</a>.</p>
+<h2 id="workflow"><code>workflow</code></h2>
+<pre><code class="yaml">type: workflow
+workflow:
+  meta_path: meta.workflow
+  stages: {}
+</code></pre>
+
+<p>Performs the same workflow stages as the <a href="#process_dag"><code>process_dag</code></a>
+processor, but uses a record of workflow statuses stored in the path specified
+by the field <code>meta_path</code> in order to report which workflow stages
+succeeded, were skipped, or failed for a document. The record takes this form:</p>
+<pre><code class="json">{
+    &quot;succeeded&quot;: [ &quot;foo&quot; ],
+    &quot;skipped&quot;: [ &quot;bar&quot; ],
+    &quot;failed&quot;: [ &quot;baz&quot; ]
+}
+</code></pre>
+
+<p>If a document is consumed that already contains these records then they will be
+used in order to only perform stages that haven't already succeeded or have been
+skipped. For example, if a document received contained the above snippet then
+the foo and bar stages would not be attempted. Before writing the new records to
+the resulting payloads the old one will be moved into
+<code>&lt;meta_path&gt;.previous</code>.</p>
+<p>If a field <code>&lt;meta_path&gt;.apply</code> exists in the record for a document and
+is an array then it will be used as a whitelist of stages to apply, all other
+stages will be skipped.</p>
+<p>You can read more about workflows in Benthos
+<a href="../workflows/">in this document</a>.</p>
 <h2 id="xml"><code>xml</code></h2>
 <pre><code class="yaml">type: xml
 xml:

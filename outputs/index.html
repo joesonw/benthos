@@ -242,6 +242,7 @@
             <li><a href="#switch">switch</a></li>
             <li><a href="#sync_response">sync_response</a></li>
             <li><a href="#tcp">tcp</a></li>
+            <li><a href="#try">try</a></li>
             <li><a href="#udp">udp</a></li>
             <li><a href="#websocket">websocket</a></li>
     </ul>
@@ -288,7 +289,7 @@ boolean logic.</p>
 conditions please <a href="../conditions/">read the docs here</a>.</p>
 <h3 id="dead-letter-queues">Dead Letter Queues</h3>
 <p>It's possible to create fallback outputs for when an output target fails using
-a <a href="#broker"><code>broker</code></a> output with the 'try' pattern.</p>
+a <a href="#try"><code>try</code></a> output.</p>
 <h3 id="contents">Contents</h3>
 <ol>
 <li><a href="#amqp"><code>amqp</code></a></li>
@@ -327,6 +328,7 @@ a <a href="#broker"><code>broker</code></a> output with the 'try' pattern.</p>
 <li><a href="#switch"><code>switch</code></a></li>
 <li><a href="#sync_response"><code>sync_response</code></a></li>
 <li><a href="#tcp"><code>tcp</code></a></li>
+<li><a href="#try"><code>try</code></a></li>
 <li><a href="#udp"><code>udp</code></a></li>
 <li><a href="#websocket"><code>websocket</code></a></li>
 </ol>
@@ -421,29 +423,29 @@ listing them:</p>
 
 <p>The broker pattern determines the way in which messages are allocated to outputs
 and can be chosen from the following:</p>
-<h4 id="fan_out"><code>fan_out</code></h4>
+<p><code>fan_out</code></p>
 <p>With the fan out pattern all outputs will be sent every message that passes
 through Benthos in parallel.</p>
 <p>If an output applies back pressure it will block all subsequent messages, and if
 an output fails to send a message it will be retried continuously until
 completion or service shut down.</p>
-<h4 id="fan_out_sequential"><code>fan_out_sequential</code></h4>
+<p><code>fan_out_sequential</code></p>
 <p>Similar to the fan out pattern except outputs are written to sequentially,
 meaning an output is only written to once the preceding output has confirmed
 receipt of the same message.</p>
-<h4 id="round_robin"><code>round_robin</code></h4>
+<p><code>round_robin</code></p>
 <p>With the round robin pattern each message will be assigned a single output
 following their order. If an output applies back pressure it will block all
 subsequent messages. If an output fails to send a message then the message will
 be re-attempted with the next input, and so on.</p>
-<h4 id="greedy"><code>greedy</code></h4>
+<p><code>greedy</code></p>
 <p>The greedy pattern results in higher output throughput at the cost of
 potentially disproportionate message allocations to those outputs. Each message
 is sent to a single output, which is determined by allowing outputs to claim
 messages as soon as they are able to process them. This results in certain
 faster outputs potentially processing more messages at the cost of slower
 outputs.</p>
-<h4 id="try"><code>try</code></h4>
+<p><code>try</code></p>
 <p>The try pattern attempts to send each message to only one output, starting from
 the first output on the list. If an output attempt fails then the broker
 attempts to send to the next output in the list and so on.</p>
@@ -728,6 +730,7 @@ http_client:
   rate_limit: &quot;&quot;
   retries: 3
   retry_period: 1s
+  successful_on: []
   timeout: 5s
   tls:
     client_certs: []
@@ -922,6 +925,9 @@ mqtt:
 </code></pre>
 
 <p>Pushes messages to an MQTT broker.</p>
+<p>The <code>topic</code> field can be dynamically set using function interpolations
+described <a href="../config_interpolation/#functions">here</a>. When sending batched
+messages these interpolations are performed per message part.</p>
 <h2 id="nanomsg"><code>nanomsg</code></h2>
 <pre><code class="yaml">type: nanomsg
 nanomsg:
@@ -1277,6 +1283,36 @@ tcp:
 connecting to a server.</p>
 <p>If batched messages are sent the final message of the batch will be followed by
 two line breaks in order to indicate the end of the batch.</p>
+<h2 id="try"><code>try</code></h2>
+<pre><code class="yaml">type: try
+try: []
+</code></pre>
+
+<p>Attempts to send each message to only one output, starting from the first output
+on the list. If an output attempt fails then the next output in the list is
+attempted, and so on.</p>
+<p>This pattern is useful for triggering events in the case where certain output
+targets have broken. For example, if you had an output type <code>http_client</code>
+but wished to reroute messages whenever the endpoint becomes unreachable you
+could use this pattern:</p>
+<pre><code class="yaml">output:
+  try:
+  - http_client:
+      url: http://foo:4195/post/might/become/unreachable
+      retries: 3
+      retry_period: 1s
+  - http_client:
+      url: http://bar:4196/somewhere/else
+      retries: 3
+      retry_period: 1s
+    processors:
+    - text:
+        operator: prepend
+        value: 'failed to send this message to foo: '
+  - file:
+      path: /usr/local/benthos/everything_failed.jsonl
+</code></pre>
+
 <h2 id="udp"><code>udp</code></h2>
 <pre><code class="yaml">type: udp
 udp:

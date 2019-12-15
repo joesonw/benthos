@@ -564,6 +564,7 @@ http_client:
     max_buffer: 1e+06
     multipart: false
     reconnect: true
+  successful_on: []
   timeout: 5s
   tls:
     client_certs: []
@@ -593,6 +594,9 @@ http_server:
   key_file: &quot;&quot;
   path: /post
   rate_limit: &quot;&quot;
+  sync_response:
+    headers:
+      Content-Type: application/octet-stream
   timeout: 5s
   ws_path: /post/ws
   ws_rate_limit_message: &quot;&quot;
@@ -611,7 +615,10 @@ with a Retry-After header. Websocket payloads will be dropped and an optional
 response payload will be sent as per <code>ws_rate_limit_message</code>.</p>
 <h3 id="responses">Responses</h3>
 <p>It's possible to return a response for each message received using
-<a href="../sync_responses/">synchronous responses</a>.</p>
+<a href="../sync_responses/">synchronous responses</a>. When doing so you can customise
+headers with the <code>sync_response</code> field <code>headers</code>, which can also use
+<a href="../config_interpolation/#metadata">function interpolation</a> in the value based
+on the response message contents.</p>
 <h3 id="endpoints">Endpoints</h3>
 <p>The following fields specify endpoints that are registered for sending messages:</p>
 <h4 id="path-defaults-to-post"><code>path</code> (defaults to <code>/post</code>)</h4>
