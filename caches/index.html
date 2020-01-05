@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -216,40 +216,26 @@
 <p>This document was generated with <code>benthos --list-caches</code></p>
 <p>A cache is a key/value store which can be used by certain processors for
 applications such as deduplication. Caches are listed with unique labels which
-are referred to by processors that may share them. For example, if we were to
-deduplicate hypothetical 'foo' and 'bar' inputs, but not 'baz', we could arrange
-our config as follows:</p>
-<pre><code class="yaml">input:
-  type: broker
-  broker:
-    inputs:
-    - type: foo
-      processors:
-      - type: dedupe
-        dedupe:
-          cache: foobar
-          hash: xxhash
-    - type: bar
-      processors:
-      - type: dedupe
-        dedupe:
-          cache: foobar
-          hash: xxhash
-    - type: baz
-resources:
+are referred to by processors that may share them.</p>
+<p>Caches are configured as resources:</p>
+<pre><code class="yaml">resources:
   caches:
     foobar:
-      type: memcached
       memcached:
         addresses:
-        - localhost:11211
+          - localhost:11211
         ttl: 60
 </code></pre>
 
-<p>In that example we have a single memcached based cache 'foobar', which is used
-by the dedupe processors of both the 'foo' and 'bar' inputs. A message received
-from both 'foo' and 'bar' would therefore be detected and removed since the
-cache is the same for both inputs.</p>
+<p>And any components that use caches have a field used to refer to a cache
+resource:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    - dedupe:
+        cache: foobar
+        hash: xxhash
+</code></pre>
+
 <h3 id="contents">Contents</h3>
 <ol>
 <li><a href="#dynamodb"><code>dynamodb</code></a></li>
@@ -297,6 +283,7 @@ configuration field.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<hr />
 <h2 id="file"><code>file</code></h2>
 <pre><code class="yaml">type: file
 file:
@@ -307,6 +294,7 @@ file:
 the path relative to the configured directory.</p>
 <p>This type currently offers no form of item expiry or garbage collection, and is
 intended to be used for development and debugging purposes only.</p>
+<hr />
 <h2 id="memcached"><code>memcached</code></h2>
 <pre><code class="yaml">type: memcached
 memcached:
@@ -320,6 +308,7 @@ memcached:
 
 <p>Connects to a cluster of memcached services, a prefix can be specified to allow
 multiple cache types to share a memcached cluster under different namespaces.</p>
+<hr />
 <h2 id="memory"><code>memory</code></h2>
 <pre><code class="yaml">type: memory
 memory:
@@ -346,6 +335,7 @@ memory:
 
 <p>These values can be overridden during execution, at which point the configured
 TTL is respected as usual.</p>
+<hr />
 <h2 id="redis"><code>redis</code></h2>
 <pre><code class="yaml">type: redis
 redis:
@@ -358,6 +348,7 @@ redis:
 
 <p>Use a Redis instance as a cache. The expiration can be set to zero or an empty
 string in order to set no expiration.</p>
+<hr />
 <h2 id="s3"><code>s3</code></h2>
 <pre><code class="yaml">type: s3
 s3:

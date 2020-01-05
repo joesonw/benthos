@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -202,7 +202,6 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#inputs">Inputs</a></li>
             <li><a href="#contents">Contents</a></li>
-            <li><a href="#amqp">amqp</a></li>
             <li><a href="#amqp_0_9">amqp_0_9</a></li>
             <li><a href="#broker">broker</a></li>
             <li><a href="#dynamic">dynamic</a></li>
@@ -245,16 +244,21 @@ Benthos config. However, the root input can be a <a href="#broker">broker</a> wh
 combines multiple inputs.</p>
 <p>An input config section looks like this:</p>
 <pre><code class="yaml">input:
-  type: foo
-  foo:
-    bar: baz
+  redis_streams:
+    url: tcp://localhost:6379
+    streams:
+      - benthos_stream
+    body_key: body
+    consumer_group: benthos_group
+
+  # Optional list of processing steps
   processors:
-  - type: qux
+   - jmespath:
+       query: '{ message: @, meta: { link_count: length(links) } }'
 </code></pre>
 
 <h3 id="contents">Contents</h3>
 <ol>
-<li><a href="#amqp"><code>amqp</code></a></li>
 <li><a href="#amqp_0_9"><code>amqp_0_9</code></a></li>
 <li><a href="#broker"><code>broker</code></a></li>
 <li><a href="#dynamic"><code>dynamic</code></a></li>
@@ -286,38 +290,9 @@ combines multiple inputs.</p>
 <li><a href="#udp_server"><code>udp_server</code></a></li>
 <li><a href="#websocket"><code>websocket</code></a></li>
 </ol>
-<h2 id="amqp"><code>amqp</code></h2>
-<pre><code class="yaml">type: amqp
-amqp:
-  bindings_declare: []
-  consumer_tag: benthos-consumer
-  max_batch_count: 1
-  prefetch_count: 10
-  prefetch_size: 0
-  queue: benthos-queue
-  queue_declare:
-    durable: true
-    enabled: false
-  tls:
-    client_certs: []
-    enabled: false
-    root_cas_file: &quot;&quot;
-    skip_cert_verify: false
-  url: amqp://guest:guest@localhost:5672/
-</code></pre>
-
-<p>DEPRECATED: This input is deprecated and scheduled for removal in Benthos V4.
-Please use <a href="#amqp_0_9"><code>amqp_0_9</code></a> instead.</p>
 <h2 id="amqp_0_9"><code>amqp_0_9</code></h2>
 <pre><code class="yaml">type: amqp_0_9
 amqp_0_9:
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: &quot;&quot;
   bindings_declare: []
   consumer_tag: benthos-consumer
   prefetch_count: 10
@@ -336,11 +311,6 @@ amqp_0_9:
 
 <p>Connects to an AMQP (0.91) queue. AMQP is a messaging protocol used by various
 message brokers, including RabbitMQ.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
-<p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>.</p>
 <p>It's possible for this input type to declare the target queue by setting
 <code>queue_declare.enabled</code> to <code>true</code>, if the queue already exists then
 the declaration passively verifies that they match the target fields.</p>
@@ -379,6 +349,7 @@ settings can be enabled in the <code>tls</code> section.</p>
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="broker"><code>broker</code></h2>
 <pre><code class="yaml">type: broker
 broker:
@@ -407,6 +378,12 @@ one. For example, reading from both RabbitMQ and Kafka:</p>
         url: amqp://guest:guest@localhost:5672/
         consumer_tag: benthos-consumer
         queue: benthos-queue
+
+      # Optional list of input specific processing steps
+      processors:
+        - jmespath:
+            query: '{ message: @, meta: { link_count: length(links) } }'
+
     - kafka:
         addresses:
         - localhost:9092
@@ -430,6 +407,7 @@ level, where they will be applied to <em>all</em> child inputs, as well as on th
 individual child inputs. If you have processors at both the broker level <em>and</em>
 on child inputs then the broker processors will be applied <em>after</em> the child
 nodes processors.</p>
+<hr />
 <h2 id="dynamic"><code>dynamic</code></h2>
 <pre><code class="yaml">type: dynamic
 dynamic:
@@ -447,6 +425,7 @@ HTTP interface.</p>
 methods on the <code>/inputs/{input_id}</code> endpoint. When using POST the body
 of the request should be a JSON configuration for the input, if the input
 already exists it will be changed.</p>
+<hr />
 <h2 id="file"><code>file</code></h2>
 <pre><code class="yaml">type: file
 file:
@@ -460,6 +439,7 @@ file:
 is read as a separate message. If multipart is set to true each line is read as
 a message part, and an empty line indicates the end of a message.</p>
 <p>If the delimiter field is left empty then line feed (\n) is used.</p>
+<hr />
 <h2 id="files"><code>files</code></h2>
 <pre><code class="yaml">type: files
 files:
@@ -470,9 +450,6 @@ files:
 message payload. The path can either point to a single file (resulting in only a
 single message) or a directory, in which case the directory will be walked and
 each file found will become a message.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <h3 id="metadata_1">Metadata</h3>
 <p>This input adds the following metadata fields to each message:</p>
 <pre><code class="text">- path
@@ -480,17 +457,10 @@ instance of this input can utilise any number of threads within a
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="gcp_pubsub"><code>gcp_pubsub</code></h2>
 <pre><code class="yaml">type: gcp_pubsub
 gcp_pubsub:
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: &quot;&quot;
-  max_batch_count: 1
   max_outstanding_bytes: 1000000000
   max_outstanding_messages: 1000
   project: &quot;&quot;
@@ -498,11 +468,6 @@ gcp_pubsub:
 </code></pre>
 
 <p>Consumes messages from a GCP Cloud Pub/Sub subscription.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
-<p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>.</p>
 <h3 id="metadata_2">Metadata</h3>
 <p>This input adds the following metadata fields to each message:</p>
 <pre><code class="text">- gcp_pubsub_publish_time_unix
@@ -511,6 +476,7 @@ instance of this input can utilise any number of threads within a
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="hdfs"><code>hdfs</code></h2>
 <pre><code class="yaml">type: hdfs
 hdfs:
@@ -522,9 +488,6 @@ hdfs:
 
 <p>Reads files from a HDFS directory, where each discrete file will be consumed as
 a single message payload.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <h3 id="metadata_3">Metadata</h3>
 <p>This input adds the following metadata fields to each message:</p>
 <pre><code class="text">- hdfs_name
@@ -533,6 +496,7 @@ instance of this input can utilise any number of threads within a
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="http_client"><code>http_client</code></h2>
 <pre><code class="yaml">type: http_client
 http_client:
@@ -586,6 +550,7 @@ interpolations described <a href="../config_interpolation/#functions">here</a>.<
 line delimited list of message parts. Each part is read as an individual message
 unless multipart is set to true, in which case an empty line indicates the end
 of a message.</p>
+<hr />
 <h2 id="http_server"><code>http_server</code></h2>
 <pre><code class="yaml">type: http_server
 http_server:
@@ -646,6 +611,7 @@ static payload to be sent to clients that have triggered the servers rate limit.
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="inproc"><code>inproc</code></h2>
 <pre><code class="yaml">type: inproc
 inproc: &quot;&quot;
@@ -659,6 +625,7 @@ feedback loops can lead to deadlocks in your message flow.</p>
 <p>It is possible to connect multiple inputs to the same inproc ID, but only one
 output can connect to an inproc ID, and will replace existing outputs if a
 collision occurs.</p>
+<hr />
 <h2 id="kafka"><code>kafka</code></h2>
 <pre><code class="yaml">type: kafka
 kafka:
@@ -675,7 +642,6 @@ kafka:
   commit_period: 1s
   consumer_group: benthos_consumer_group
   fetch_buffer_cap: 256
-  max_batch_count: 1
   max_processing_period: 100ms
   partition: 0
   sasl:
@@ -697,9 +663,8 @@ consumer group (set via config). Only one partition per input is supported, if
 you wish to balance partitions across a consumer group look at the
 <code>kafka_balanced</code> input type instead.</p>
 <p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>. It is not currently possible to
-use <a href="../batching/#combined-batching">broker based batching</a> with this input
-type.</p>
+<a href="../batching/#batch-policy">batching policy</a>. Any other batching mechanism
+will stall with this input due its sequential transaction model.</p>
 <p>This input currently provides a single continuous feed of data, and therefore
 by default will only utilise a single processing thread and parallel output.
 Take a look at the
@@ -741,6 +706,7 @@ water mark offset of the partition at the time of ingestion and the current
 message offset.</p>
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="kafka_balanced"><code>kafka_balanced</code></h2>
 <pre><code class="yaml">type: kafka_balanced
 kafka_balanced:
@@ -761,7 +727,6 @@ kafka_balanced:
     heartbeat_interval: 3s
     rebalance_timeout: 60s
     session_timeout: 10s
-  max_batch_count: 1
   max_processing_period: 100ms
   sasl:
     enabled: false
@@ -786,8 +751,8 @@ utilise &lt;= N pipeline processing threads and parallel outputs where N is the
 number of partitions allocated to this consumer.</p>
 <p>The <code>batching</code> fields allow you to configure a
 <a href="../batching/#batch-policy">batching policy</a> which will be applied per
-partition. It is not currently possible to use
-<a href="../batching/#combined-batching">broker based batching</a> with this input type.</p>
+partition. Any other batching mechanism will stall with this input due its
+sequential transaction model.</p>
 <p>The field <code>max_processing_period</code> should be set above the maximum
 estimated time taken to process a message.</p>
 <h3 id="tls_1">TLS</h3>
@@ -820,6 +785,7 @@ water mark offset of the partition at the time of ingestion and the current
 message offset.</p>
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="kinesis"><code>kinesis</code></h2>
 <pre><code class="yaml">type: kinesis
 kinesis:
@@ -855,9 +821,8 @@ table name. Offsets will then be tracked per <code>client_id</code> per
 <code>shard_id</code>. When using this mode you should create a table with
 <code>namespace</code> as the primary key and <code>shard_id</code> as a sort key.</p>
 <p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>. It is not currently possible to
-use <a href="../batching/#combined-batching">broker based batching</a> with this input
-type.</p>
+<a href="../batching/#batch-policy">batching policy</a>. Any other batching mechanism
+will stall with this input due its sequential transaction model.</p>
 <p>This input currently provides a single continuous feed of data, and therefore
 by default will only utilise a single processing thread and parallel output.
 Take a look at the
@@ -868,6 +833,7 @@ guides on how to work around this.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<hr />
 <h2 id="kinesis_balanced"><code>kinesis_balanced</code></h2>
 <pre><code class="yaml">type: kinesis_balanced
 kinesis_balanced:
@@ -919,6 +885,7 @@ allowing you to transfer data across accounts. You can find out more
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="mqtt"><code>mqtt</code></h2>
 <pre><code class="yaml">type: mqtt
 mqtt:
@@ -934,9 +901,6 @@ mqtt:
 </code></pre>
 
 <p>Subscribe to topics on MQTT brokers.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <h3 id="metadata_8">Metadata</h3>
 <p>This input adds the following metadata fields to each message:</p>
 <pre><code class="text">- mqtt_duplicate
@@ -948,6 +912,7 @@ instance of this input can utilise any number of threads within a
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="nanomsg"><code>nanomsg</code></h2>
 <pre><code class="yaml">type: nanomsg
 nanomsg:
@@ -962,10 +927,8 @@ nanomsg:
 
 <p>The scalability protocols are common communication patterns. This input should
 be compatible with any implementation, but specifically targets Nanomsg.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <p>Currently only PULL and SUB sockets are supported.</p>
+<hr />
 <h2 id="nats"><code>nats</code></h2>
 <pre><code class="yaml">type: nats
 nats:
@@ -978,9 +941,6 @@ nats:
 
 <p>Subscribe to a NATS subject. NATS is at-most-once, if you need at-least-once
 behaviour then look at NATS Stream.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <p>The urls can contain username/password semantics. e.g.
 nats://derek:pass@localhost:4222</p>
 <h3 id="metadata_9">Metadata</h3>
@@ -990,17 +950,11 @@ nats://derek:pass@localhost:4222</p>
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="nats_stream"><code>nats_stream</code></h2>
 <pre><code class="yaml">type: nats_stream
 nats_stream:
   ack_wait: 30s
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: &quot;&quot;
   client_id: benthos_client
   cluster_id: test-cluster
   durable_name: benthos_offset
@@ -1023,11 +977,6 @@ are consumed from the most recently published message.</p>
 durable queue do this the offsets are deleted. In order to avoid this you can
 stop the consumers from unsubscribing by setting the field
 <code>unsubscribe_on_close</code> to <code>false</code>.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
-<p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>.</p>
 <h3 id="metadata_10">Metadata</h3>
 <p>This input adds the following metadata fields to each message:</p>
 <pre><code class="text">- nats_stream_subject
@@ -1036,16 +985,10 @@ instance of this input can utilise any number of threads within a
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="nsq"><code>nsq</code></h2>
 <pre><code class="yaml">type: nsq
 nsq:
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: &quot;&quot;
   channel: benthos_stream
   lookupd_http_addresses:
   - localhost:4161
@@ -1057,11 +1000,7 @@ nsq:
 </code></pre>
 
 <p>Subscribe to an NSQ instance topic and channel.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
-<p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>.</p>
+<hr />
 <h2 id="read_until"><code>read_until</code></h2>
 <pre><code class="yaml">type: read_until
 read_until:
@@ -1087,6 +1026,7 @@ down until the condition is met then set <code>restart_input</code> to <code>tru
 <h3 id="metadata_11">Metadata</h3>
 <p>A metadata key <code>benthos_read_until</code> containing the value <code>final</code> is
 added to the first part of the message that triggers to input to stop.</p>
+<hr />
 <h2 id="redis_list"><code>redis_list</code></h2>
 <pre><code class="yaml">type: redis_list
 redis_list:
@@ -1096,9 +1036,7 @@ redis_list:
 </code></pre>
 
 <p>Pops messages from the beginning of a Redis list using the BLPop command.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
+<hr />
 <h2 id="redis_pubsub"><code>redis_pubsub</code></h2>
 <pre><code class="yaml">type: redis_pubsub
 redis_pubsub:
@@ -1110,9 +1048,6 @@ redis_pubsub:
 
 <p>Redis supports a publish/subscribe model, it's possible to subscribe to multiple
 channels using this input.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
 <p>In order to subscribe to channels using the <code>PSUBSCRIBE</code> command set
 the field <code>use_patterns</code> to <code>true</code>, then you can include glob-style
 patterns in your channel names. For example:</p>
@@ -1123,16 +1058,10 @@ patterns in your channel names. For example:</p>
 </ul>
 <p>Use <code>\</code> to escape special characters if you want to match them
 verbatim.</p>
+<hr />
 <h2 id="redis_streams"><code>redis_streams</code></h2>
 <pre><code class="yaml">type: redis_streams
 redis_streams:
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: &quot;&quot;
   body_key: body
   client_id: benthos_consumer
   commit_period: 1s
@@ -1150,14 +1079,10 @@ redis_streams:
 <p>The field <code>limit</code> specifies the maximum number of records to be
 received per request. When more than one record is returned they are batched and
 can be split into individual messages with the <code>split</code> processor.</p>
-<p>Messages consumed by this input can be processed in parallel, meaning a single
-instance of this input can utilise any number of threads within a
-<code>pipeline</code> section of a config.</p>
-<p>Use the <code>batching</code> fields to configure an optional
-<a href="../batching/#batch-policy">batching policy</a>.</p>
 <p>Redis stream entries are key/value pairs, as such it is necessary to specify the
 key that contains the body of the message. All other keys/value pairs are saved
 as metadata fields.</p>
+<hr />
 <h2 id="s3"><code>s3</code></h2>
 <pre><code class="yaml">type: s3
 s3:
@@ -1235,6 +1160,7 @@ allowing you to transfer data across accounts. You can find out more
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="sqs"><code>sqs</code></h2>
 <pre><code class="yaml">type: sqs
 sqs:
@@ -1273,6 +1199,7 @@ allowing you to transfer data across accounts. You can find out more
 
 <p>You can access these metadata fields using
 <a href="../config_interpolation/#metadata">function interpolation</a>.</p>
+<hr />
 <h2 id="stdin"><code>stdin</code></h2>
 <pre><code class="yaml">type: stdin
 stdin:
@@ -1289,6 +1216,7 @@ indicates the end of the message.</p>
 instance of this input can utilise any number of threads within a
 <code>pipeline</code> section of a config.</p>
 <p>If the delimiter field is left empty then line feed (\n) is used.</p>
+<hr />
 <h2 id="tcp"><code>tcp</code></h2>
 <pre><code class="yaml">type: tcp
 tcp:
@@ -1306,6 +1234,7 @@ indicates the end of a message.</p>
 instance of this input can utilise any number of threads within a
 <code>pipeline</code> section of a config.</p>
 <p>If the delimiter field is left empty then line feed (\n) is used.</p>
+<hr />
 <h2 id="tcp_server"><code>tcp_server</code></h2>
 <pre><code class="yaml">type: tcp_server
 tcp_server:
@@ -1324,6 +1253,7 @@ indicates the end of a message.</p>
 <p>The field <code>max_buffer</code> specifies the maximum amount of memory to
 allocate <em>per connection</em> for buffering lines of data. If a line of data from a
 connection exceeds this value then the connection will be closed.</p>
+<hr />
 <h2 id="udp_server"><code>udp_server</code></h2>
 <pre><code class="yaml">type: udp_server
 udp_server:
@@ -1338,6 +1268,7 @@ left empty then line feed (\n) is used.</p>
 <p>The field <code>max_buffer</code> specifies the maximum amount of memory to
 allocate for buffering lines of data, this must exceed the largest expected
 message size.</p>
+<hr />
 <h2 id="websocket"><code>websocket</code></h2>
 <pre><code class="yaml">type: websocket
 websocket:

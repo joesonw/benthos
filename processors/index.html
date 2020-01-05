@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -207,7 +207,6 @@
             <li><a href="#archive">archive</a></li>
             <li><a href="#avro">avro</a></li>
             <li><a href="#awk">awk</a></li>
-            <li><a href="#batch">batch</a></li>
             <li><a href="#bounds_check">bounds_check</a></li>
             <li><a href="#cache">cache</a></li>
             <li><a href="#catch">catch</a></li>
@@ -247,7 +246,7 @@
             <li><a href="#sample">sample</a></li>
             <li><a href="#select_parts">select_parts</a></li>
             <li><a href="#sleep">sleep</a></li>
-            <li><a href="#split_1">split</a></li>
+            <li><a href="#split">split</a></li>
             <li><a href="#sql">sql</a></li>
             <li><a href="#subprocess">subprocess</a></li>
             <li><a href="#switch">switch</a></li>
@@ -276,24 +275,23 @@ messages and can be placed in the pipeline section:</p>
 <pre><code class="yaml">pipeline:
   threads: 1
   processors:
-  - type: foo
-    foo:
-      bar: baz
+   - jmespath:
+       query: '{ message: @, meta: { link_count: length(links) } }'
 </code></pre>
 
 <p>The <code>threads</code> field in the pipeline section determines how many
 parallel processing threads are created. You can read more about parallel
 processing in the <a href="../pipeline/">pipeline guide</a>.</p>
 <p>By organising processors you can configure complex behaviours in your pipeline.
-You can <a href="../examples/">find some examples here</a>.</p>
+You can <a href="../cookbooks/">find some examples here</a>.</p>
 <h3 id="error-handling">Error Handling</h3>
 <p>Some processors have conditions whereby they might fail. Benthos has mechanisms
 for detecting and recovering from these failures which can be read about
 <a href="../error_handling/">here</a>.</p>
 <h3 id="batching-and-multiple-part-messages">Batching and Multiple Part Messages</h3>
 <p>All Benthos processors support multiple part messages, which are synonymous with
-batches. Some processors such as <a href="#batch">batch</a> and <a href="#split">split</a> are able to
-create, expand and break down batches.</p>
+batches. Some processors such as <a href="#split">split</a> are able to create, expand and
+break down batches.</p>
 <p>Many processors are able to perform their behaviours on specific parts of a
 message batch, or on all parts, and have a field <code>parts</code> for
 specifying an array of part indexes they should apply to. If the list of target
@@ -302,15 +300,15 @@ parts is empty these processors will be applied to all message parts.</p>
 counting backwards starting from -1. E.g. if part = -1 then the selected part
 will be the last part of the message, if part = -2 then the part before the last
 element will be selected, and so on.</p>
-<p>Some processors such as <code>filter</code> and <code>dedupe</code> act across an entire
-batch, when instead we'd like to perform them on individual messages of a batch.
-In this case the <a href="#for_each"><code>for_each</code></a> processor can be used.</p>
+<p>Some processors such as <a href="#filter"><code>filter</code></a> and <a href="#dedupe"><code>dedupe</code></a>
+act across an entire batch, when instead we'd like to perform them on individual
+messages of a batch. In this case the <a href="#for_each"><code>for_each</code></a>
+processor can be used.</p>
 <h3 id="contents">Contents</h3>
 <ol>
 <li><a href="#archive"><code>archive</code></a></li>
 <li><a href="#avro"><code>avro</code></a></li>
 <li><a href="#awk"><code>awk</code></a></li>
-<li><a href="#batch"><code>batch</code></a></li>
 <li><a href="#bounds_check"><code>bounds_check</code></a></li>
 <li><a href="#cache"><code>cache</code></a></li>
 <li><a href="#catch"><code>catch</code></a></li>
@@ -384,6 +382,7 @@ interpolations on the 'path' field as described
 the result to an array, which becomes the contents of the resulting message.</p>
 <p>The resulting archived message adopts the metadata of the <em>first</em> message part
 of the batch.</p>
+<hr />
 <h2 id="avro"><code>avro</code></h2>
 <pre><code class="yaml">type: avro
 avro:
@@ -405,6 +404,7 @@ specifies how the source documents are encoded.</p>
 <h4 id="from_json"><code>from_json</code></h4>
 <p>Attempts to convert JSON documents into Avro documents according to the
 specified encoding.</p>
+<hr />
 <h2 id="awk"><code>awk</code></h2>
 <pre><code class="yaml">type: awk
 awk:
@@ -453,21 +453,7 @@ foo_created_at = &quot;2018-12-18T11:57:32&quot;
 </code></pre>
 
 <p>Custom functions can also still be used with this codec.</p>
-<h2 id="batch"><code>batch</code></h2>
-<pre><code class="yaml">type: batch
-batch:
-  byte_size: 0
-  condition:
-    type: static
-    static: false
-  count: 0
-  period: &quot;&quot;
-</code></pre>
-
-<p>DEPRECATED: This processor is no longer supported and has been replaced with
-improved batching mechanisms. For more information about batching in Benthos
-please check out <a href="../batching/">this document</a>.</p>
-<p>This processor is scheduled to be removed in Benthos V4</p>
+<hr />
 <h2 id="bounds_check"><code>bounds_check</code></h2>
 <pre><code class="yaml">type: bounds_check
 bounds_check:
@@ -479,6 +465,7 @@ bounds_check:
 
 <p>Checks whether each message batch fits within certain boundaries, and drops
 batches that do not.</p>
+<hr />
 <h2 id="cache"><code>cache</code></h2>
 <pre><code class="yaml">type: cache
 cache:
@@ -508,6 +495,9 @@ with a 'key already exists' error, which can be detected with
 <p>Retrieve the contents of a cached key and replace the original message payload
 with the result. If the key does not exist the action fails with an error, which
 can be detected with <a href="../error_handling/">processor error handling</a>.</p>
+<h4 id="delete"><code>delete</code></h4>
+<p>Delete a key and its contents from the cache.  If the key does not exist the
+action is a no-op and will not fail with an error.</p>
 <h3 id="examples">Examples</h3>
 <p>The <code>cache</code> processor can be used in combination with other processors
 in order to solve a variety of data stream problems.</p>
@@ -539,6 +529,7 @@ using the <a href="#process_map"><code>process_map</code></a> processor:</p>
       message.document: .
 </code></pre>
 
+<hr />
 <h2 id="catch"><code>catch</code></h2>
 <pre><code class="yaml">type: catch
 catch: []
@@ -562,6 +553,7 @@ fail for the processor <code>foo</code> will skip these processors.</p>
 is useful for when it's possible to recover failed messages, or when special
 actions (such as logging/metrics) are required before dropping them.</p>
 <p>More information about error handing can be found <a href="../error_handling/">here</a>.</p>
+<hr />
 <h2 id="compress"><code>compress</code></h2>
 <pre><code class="yaml">type: compress
 compress:
@@ -573,6 +565,7 @@ compress:
 <p>Compresses messages according to the selected algorithm. Supported compression
 algorithms are: gzip, zlib, flate.</p>
 <p>The 'level' field might not apply to all algorithms.</p>
+<hr />
 <h2 id="conditional"><code>conditional</code></h2>
 <pre><code class="yaml">type: conditional
 conditional:
@@ -594,6 +587,7 @@ applying processors based on the content of message batches.</p>
 <p>In order to conditionally process each message of a batch individually use this
 processor with the <a href="#for_each"><code>for_each</code></a> processor.</p>
 <p>You can find a <a href="../conditions">full list of conditions here</a>.</p>
+<hr />
 <h2 id="decode"><code>decode</code></h2>
 <pre><code class="yaml">type: decode
 decode:
@@ -603,6 +597,7 @@ decode:
 
 <p>Decodes messages according to the selected scheme. Supported available schemes
 are: hex, base64.</p>
+<hr />
 <h2 id="decompress"><code>decompress</code></h2>
 <pre><code class="yaml">type: decompress
 decompress:
@@ -612,6 +607,7 @@ decompress:
 
 <p>Decompresses messages according to the selected algorithm. Supported
 decompression types are: gzip, zlib, bzip2, flate.</p>
+<hr />
 <h2 id="dedupe"><code>dedupe</code></h2>
 <pre><code class="yaml">type: dedupe
 dedupe:
@@ -658,6 +654,7 @@ sink followed by a restart of the Benthos instance.</p>
 problem by using a memory based cache. This is a compromise that can achieve
 effective deduplication but parallel deployments of the pipeline as well as
 service restarts increase the chances of duplicates passing undetected.</p>
+<hr />
 <h2 id="encode"><code>encode</code></h2>
 <pre><code class="yaml">type: encode
 encode:
@@ -667,6 +664,7 @@ encode:
 
 <p>Encodes messages according to the selected scheme. Supported schemes are:
 hex, base64.</p>
+<hr />
 <h2 id="filter"><code>filter</code></h2>
 <pre><code class="yaml">type: filter
 filter:
@@ -681,6 +679,7 @@ filter:
 batch is dropped. You can find a <a href="../conditions">full list of conditions here</a>.</p>
 <p>In order to filter individual messages of a batch use the
 <a href="#filter_parts"><code>filter_parts</code></a> processor.</p>
+<hr />
 <h2 id="filter_parts"><code>filter_parts</code></h2>
 <pre><code class="yaml">type: filter_parts
 filter_parts:
@@ -698,6 +697,7 @@ case each condition will be applied to a message as if it were a single message
 batch.</p>
 <p>This processor is useful if you are combining messages into batches using the
 <a href="#batch"><code>batch</code></a> processor and wish to remove specific parts.</p>
+<hr />
 <h2 id="for_each"><code>for_each</code></h2>
 <pre><code class="yaml">type: for_each
 for_each: []
@@ -710,6 +710,7 @@ the <code>value</code> field of the <code>metadata</code> processor to execute o
 individual message parts of a batch instead.</p>
 <p>Please note that most processors already process per message of a batch, and
 this processor is not needed in those cases.</p>
+<hr />
 <h2 id="grok"><code>grok</code></h2>
 <pre><code class="yaml">type: grok
 grok:
@@ -735,6 +736,7 @@ regular expression engine, which is guaranteed to run in time linear to the size
 of the input. However, this property often makes it less performant than pcre
 based implementations of grok. For more information see
 <a href="https://swtch.com/~rsc/regexp/regexp1.html">https://swtch.com/~rsc/regexp/regexp1.html</a>.</p>
+<hr />
 <h2 id="group_by"><code>group_by</code></h2>
 <pre><code class="yaml">type: group_by
 group_by: []
@@ -793,6 +795,7 @@ output:
 
 <p>Since any message that isn't a foo is a bar, and bars do not require their own
 processing steps, we only need a single grouping configuration.</p>
+<hr />
 <h2 id="group_by_value"><code>group_by_value</code></h2>
 <pre><code class="yaml">type: group_by_value
 group_by_value:
@@ -822,6 +825,7 @@ output:
     path: docs/${!metadata:kafka_key}/${!count:files}-${!timestamp_unix_nano}.tar.gz
 </code></pre>
 
+<hr />
 <h2 id="hash"><code>hash</code></h2>
 <pre><code class="yaml">type: hash
 hash:
@@ -842,6 +846,7 @@ process_field:
       algorithm: sha256
 </code></pre>
 
+<hr />
 <h2 id="hash_sample"><code>hash_sample</code></h2>
 <pre><code class="yaml">type: hash_sample
 hash_sample:
@@ -858,6 +863,7 @@ results in dropping half of the input stream, and setting <code>retain_min</code
 to <code>50.0</code> and <code>retain_max</code> to <code>100.1</code> will drop the <em>other</em> half.</p>
 <p>In order to sample individual messages of a batch use this processor with the
 <a href="#for_each"><code>for_each</code></a> processor.</p>
+<hr />
 <h2 id="http"><code>http</code></h2>
 <pre><code class="yaml">type: http
 http:
@@ -935,6 +941,7 @@ in the response will also be set in the resulting message as metadata.</p>
 attempt. These failed messages will continue through the pipeline unchanged, but
 can be dropped or placed in a dead letter queue according to your config, you
 can read about these patterns <a href="../error_handling/">here</a>.</p>
+<hr />
 <h2 id="insert_part"><code>insert_part</code></h2>
 <pre><code class="yaml">type: insert_part
 insert_part:
@@ -953,6 +960,7 @@ than the length of the existing batch it will be inserted at the beginning.</p>
 the batch.</p>
 <p>This processor will interpolate functions within the 'content' field, you can
 find a list of functions <a href="../config_interpolation/#functions">here</a>.</p>
+<hr />
 <h2 id="jmespath"><code>jmespath</code></h2>
 <pre><code class="yaml">type: jmespath
 jmespath:
@@ -987,6 +995,7 @@ the syntax of expressions.</p>
 <p>It is possible to create boolean queries with JMESPath, in order to filter
 messages with boolean queries please instead use the
 <a href="../conditions/#jmespath"><code>jmespath</code></a> condition.</p>
+<hr />
 <h2 id="json"><code>json</code></h2>
 <pre><code class="yaml">type: json
 json:
@@ -1004,7 +1013,7 @@ the path is empty or "." the root of the data will be targeted.</p>
 <p>This processor will interpolate functions within the 'value' field, you can find
 a list of functions <a href="../config_interpolation/#functions">here</a>.</p>
 <h3 id="operators_2">Operators</h3>
-<h4 id="append"><code>append</code></h4>
+<p><code>append</code></p>
 <p>Appends a value to an array at a target dot path. If the path does not exist all
 objects in the path are created (unless there is a collision).</p>
 <p>If a non-array value already exists in the target path it will be replaced by an
@@ -1013,7 +1022,7 @@ array containing the original value as well as the new value.</p>
 array. E.g. if the target is an array <code>[0,1]</code> and the value is also an
 array <code>[2,3]</code>, the result will be <code>[0,1,2,3]</code> as opposed to
 <code>[0,1,[2,3]]</code>.</p>
-<h4 id="clean"><code>clean</code></h4>
+<p><code>clean</code></p>
 <p>Walks the JSON structure and deletes any fields where the value is:</p>
 <ul>
 <li>An empty array</li>
@@ -1021,23 +1030,48 @@ array <code>[2,3]</code>, the result will be <code>[0,1,2,3]</code> as opposed t
 <li>An empty string</li>
 <li>null</li>
 </ul>
-<h4 id="copy"><code>copy</code></h4>
+<p><code>copy</code></p>
 <p>Copies the value of a target dot path (if it exists) to a location. The
 destination path is specified in the <code>value</code> field. If the destination
 path does not exist all objects in the path are created (unless there is a
 collision).</p>
-<h4 id="delete"><code>delete</code></h4>
+<p><code>delete</code></p>
 <p>Removes a key identified by the dot path. If the path does not exist this is a
 no-op.</p>
-<h4 id="move"><code>move</code></h4>
+<p><code>explode</code></p>
+<p>Explodes an array within a JSON document to create an array containing objects
+matching the original document where the target array field of each element is
+the element of the exploded array.</p>
+<p>It is then possible to expand the array to create individual messages per
+element with the <a href="#unarchive"><code>unarchive</code> processor</a>.</p>
+<p>For example, given the following input document:</p>
+<pre><code class="json">{&quot;id&quot;:1,&quot;value&quot;:[&quot;foo&quot;,&quot;bar&quot;,&quot;baz&quot;]}
+</code></pre>
+
+<p>We can explode the elements of <code>value</code> with:</p>
+<pre><code class="yaml">json:
+  operator: explode
+  path: value
+</code></pre>
+
+<p>To create:</p>
+<pre><code class="json">[{&quot;id&quot;:1,&quot;value&quot;:&quot;foo&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;bar&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;baz&quot;}]
+</code></pre>
+
+<p>Which can be further exploded into individual messages with:</p>
+<pre><code class="yaml">unarchive:
+  format: json_array
+</code></pre>
+
+<p><code>move</code></p>
 <p>Moves the value of a target dot path (if it exists) to a new location. The
 destination path is specified in the <code>value</code> field. If the destination
 path does not exist all objects in the path are created (unless there is a
 collision).</p>
-<h4 id="select"><code>select</code></h4>
+<p><code>select</code></p>
 <p>Reads the value found at a dot path and replaced the original contents entirely
 by the new value.</p>
-<h4 id="set_1"><code>set</code></h4>
+<p><code>set</code></p>
 <p>Sets the value of a field at a dot path. If the path does not exist all objects
 in the path are created (unless there is a collision).</p>
 <p>The value can be any type, including objects and arrays. When using YAML
@@ -1054,10 +1088,11 @@ with the config:</p>
 
 <p>The value will be converted into '{"foo":{"bar":5}}'. If the YAML object
 contains keys that aren't strings those fields will be ignored.</p>
-<h4 id="split"><code>split</code></h4>
+<p><code>split</code></p>
 <p>Splits a string field by a value and replaces the original string with an array
 containing the results of the split. This operator requires both the path value
 and the contents of the <code>value</code> field to be strings.</p>
+<hr />
 <h2 id="json_schema"><code>json_schema</code></h2>
 <pre><code class="yaml">type: json_schema
 json_schema:
@@ -1115,6 +1150,7 @@ the fault. This gives you flexibility in how you may handle schema errors, but
 for a simpler use case you might instead wish to use the
 <a href="../conditions/#json_schema"><code>json_schema</code></a> condition with a
 <a href="#filter"><code>filter</code></a>.</p>
+<hr />
 <h2 id="lambda"><code>lambda</code></h2>
 <pre><code class="yaml">type: lambda
 lambda:
@@ -1155,6 +1191,7 @@ can read about these patterns <a href="../error_handling/">here</a>.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<hr />
 <h2 id="log"><code>log</code></h2>
 <pre><code class="yaml">type: log
 log:
@@ -1194,6 +1231,7 @@ message contents and metadata, e.g.:</p>
     kafka_topic: &quot;${!metadata:kafka_topic}&quot;
 </code></pre>
 
+<hr />
 <h2 id="merge_json"><code>merge_json</code></h2>
 <pre><code class="yaml">type: merge_json
 merge_json:
@@ -1206,6 +1244,7 @@ into one single JSON document and then writes it to a new message at the end of
 the batch. Merged parts are removed unless <code>retain_parts</code> is set to
 true. The new merged message will contain the metadata of the first part to be
 merged.</p>
+<hr />
 <h2 id="metadata"><code>metadata</code></h2>
 <pre><code class="yaml">type: metadata
 metadata:
@@ -1235,7 +1274,7 @@ processor:</p>
 </code></pre>
 
 <h3 id="operators_3">Operators</h3>
-<h4 id="set_2"><code>set</code></h4>
+<h4 id="set_1"><code>set</code></h4>
 <p>Sets the value of a metadata key.</p>
 <h4 id="delete_1"><code>delete</code></h4>
 <p>Removes all metadata values from the message where the key matches the value
@@ -1246,6 +1285,7 @@ provided. If the value field is left empty the key value will instead be used.</
 <p>Removes all metadata values from the message where the key is prefixed with the
 value provided. If the value field is left empty the key value will instead be
 used as the prefix.</p>
+<hr />
 <h2 id="metric"><code>metric</code></h2>
 <pre><code class="yaml">type: metric
 metric:
@@ -1307,12 +1347,14 @@ then the gauge is set to this value.</p>
 case the <code>labels</code> field can be used in order to create them. Label
 values can also be set using function interpolations in order to dynamically
 populate them with context about the message.</p>
+<hr />
 <h2 id="noop"><code>noop</code></h2>
 <pre><code class="yaml">type: noop
 </code></pre>
 
 <p>Noop is a no-op processor that does nothing, the message passes through
 unchanged.</p>
+<hr />
 <h2 id="number"><code>number</code></h2>
 <pre><code class="yaml">type: number
 number:
@@ -1347,6 +1389,7 @@ for each message of the batch place it within a
 <p>Adds a value.</p>
 <h4 id="subtract"><code>subtract</code></h4>
 <p>Subtracts a value.</p>
+<hr />
 <h2 id="parallel"><code>parallel</code></h2>
 <pre><code class="yaml">type: parallel
 parallel:
@@ -1360,6 +1403,7 @@ though they were each a batch of one message (similar to the
 processed in parallel.</p>
 <p>The field <code>cap</code>, if greater than zero, caps the maximum number of
 parallel processing threads.</p>
+<hr />
 <h2 id="process_batch"><code>process_batch</code></h2>
 <pre><code class="yaml">type: process_batch
 process_batch: []
@@ -1367,6 +1411,7 @@ process_batch: []
 
 <p>Alias for the <a href="#for_each"><code>for_each</code></a> processor, which should be used
 instead.</p>
+<hr />
 <h2 id="process_dag"><code>process_dag</code></h2>
 <pre><code class="yaml">type: process_dag
 process_dag: {}
@@ -1423,6 +1468,7 @@ and bar, we might express that relationship here like so:</p>
 
 <p>With this config the DAG would determine that the children foo and bar can be
 executed in parallel, and once they are both finished we may proceed onto baz.</p>
+<hr />
 <h2 id="process_field"><code>process_field</code></h2>
 <pre><code class="yaml">type: process_field
 process_field:
@@ -1474,6 +1520,7 @@ and a <a href="#text"><code>text</code></a> child processor:</p>
 <p>If the number of messages resulting from the processing steps does not match the
 original count then this processor fails and the messages continue unchanged.
 Therefore, you should avoid using batch and filter type processors in this list.</p>
+<hr />
 <h2 id="process_map"><code>process_map</code></h2>
 <pre><code class="yaml">type: process_map
 process_map:
@@ -1540,6 +1587,7 @@ this list.</p>
 processing they will be correctly aligned with the original batch. However, the
 ordering of premapped message parts as they are sent through processors are not
 guaranteed to match the ordering of the original batch.</p>
+<hr />
 <h2 id="rate_limit"><code>rate_limit</code></h2>
 <pre><code class="yaml">type: rate_limit
 rate_limit:
@@ -1550,6 +1598,7 @@ rate_limit:
 <a href="../rate_limits/"><code>rate_limit</code></a> resource. Rate limits are
 shared across components and therefore apply globally to all processing
 pipelines.</p>
+<hr />
 <h2 id="redis"><code>redis</code></h2>
 <pre><code class="yaml">type: redis
 redis:
@@ -1590,6 +1639,7 @@ Returns the cardinality of a set, or 0 if the key does not exist.
 
 Adds a new member to a set. Returns `1` if the member was added.
 
+---
 ## `resource`
 
 ``` yaml
@@ -1623,6 +1673,7 @@ resources:
 <p>But now the metrics path of the JMESPath processor will be
 <code>resources.processors.foo_proc</code>, this way of flattening observability
 labels becomes more useful as configs get larger and more nested.</p>
+<hr />
 <h2 id="sample"><code>sample</code></h2>
 <pre><code class="yaml">type: sample
 sample:
@@ -1633,6 +1684,7 @@ sample:
 <p>Retains a randomly sampled percentage of message batches (0 to 100) and drops
 all others. The random seed is static in order to sample deterministically, but
 can be set in config to allow parallel samples that are unique.</p>
+<hr />
 <h2 id="select_parts"><code>select_parts</code></h2>
 <pre><code class="yaml">type: select_parts
 select_parts:
@@ -1651,6 +1703,7 @@ output message) the batch is dropped entirely.</p>
 end counting backwards starting from -1. E.g. if index = -1 then the selected
 part will be the last part of the message, if index = -2 then the part before
 the last element with be selected, and so on.</p>
+<hr />
 <h2 id="sleep"><code>sleep</code></h2>
 <pre><code class="yaml">type: sleep
 sleep:
@@ -1668,7 +1721,8 @@ each message of a batch place it within a
     duration: ${!metadata:sleep_for}
 </code></pre>
 
-<h2 id="split_1"><code>split</code></h2>
+<hr />
+<h2 id="split"><code>split</code></h2>
 <pre><code class="yaml">type: split
 split:
   byte_size: 0
@@ -1683,6 +1737,7 @@ bytes (which ever limit is reached first).</p>
 also sent as a single batch. For example, if your target size was 10, and the
 processor received a batch of 95 message parts, the result would be 9 batches of
 10 messages followed by a batch of 5 messages.</p>
+<hr />
 <h2 id="sql"><code>sql</code></h2>
 <pre><code class="yaml">type: sql
 sql:
@@ -1729,6 +1784,7 @@ columns value in the row.</p>
 </ul>
 <p>Please note that the <code>postgres</code> driver enforces SSL by default, you
 can override this with the parameter <code>sslmode=disable</code> if required.</p>
+<hr />
 <h2 id="subprocess"><code>subprocess</code></h2>
 <pre><code class="yaml">type: subprocess
 subprocess:
@@ -1757,6 +1813,7 @@ running. If the process exits early it will be restarted.</p>
 <p>If a message contains line breaks each line of the message is piped to the
 subprocess and flushed, and a response is expected from the subprocess before
 another line is fed in.</p>
+<hr />
 <h2 id="switch"><code>switch</code></h2>
 <pre><code class="yaml">type: switch
 switch: []
@@ -1779,6 +1836,7 @@ the next case should be executed after it (the default is <code>false</code>.)</
 <p>In order to switch each message of a batch individually use this processor with
 the <a href="#for_each"><code>for_each</code></a> processor.</p>
 <p>You can find a <a href="../conditions">full list of conditions here</a>.</p>
+<hr />
 <h2 id="sync_response"><code>sync_response</code></h2>
 <pre><code class="yaml">type: sync_response
 sync_response: {}
@@ -1791,6 +1849,7 @@ response is dropped without penalty. It is therefore safe to use this processor
 even when combining input types that might not have support for sync responses.
 An example of an input able to utilise this is the <code>http_server</code>.</p>
 <p>For more information please read <a href="../sync_responses/">Synchronous Responses</a>.</p>
+<hr />
 <h2 id="text"><code>text</code></h2>
 <pre><code class="yaml">type: text
 text:
@@ -1813,7 +1872,7 @@ for each message of the batch place it within a
 </code></pre>
 
 <h3 id="operators_5">Operators</h3>
-<h4 id="append_1"><code>append</code></h4>
+<h4 id="append"><code>append</code></h4>
 <p>Appends text to the end of the payload.</p>
 <h4 id="escape_url_query"><code>escape_url_query</code></h4>
 <p>Escapes text so that it is safe to place within the query section of a URL.</p>
@@ -1856,7 +1915,7 @@ option2=value2
 <p>Replaces all occurrences of the argument regular expression in a message with a
 value. Inside the value $ signs are interpreted as submatch expansions, e.g. $1
 represents the text of the first submatch.</p>
-<h4 id="set_3"><code>set</code></h4>
+<h4 id="set_2"><code>set</code></h4>
 <p>Replace the contents of a message entirely with a value.</p>
 <h4 id="strip_html"><code>strip_html</code></h4>
 <p>Removes all HTML tags from a message.</p>
@@ -1870,6 +1929,7 @@ represents the text of the first submatch.</p>
 <p>Removes all leading and trailing whitespace from the payload.</p>
 <h4 id="unquote"><code>unquote</code></h4>
 <p>Unquotes a single, double, or back-quoted string literal</p>
+<hr />
 <h2 id="throttle"><code>throttle</code></h2>
 <pre><code class="yaml">type: throttle
 throttle:
@@ -1881,6 +1941,7 @@ period. This throttle is per processing pipeline, and therefore four threads
 each with a throttle would result in four times the rate specified.</p>
 <p>The period should be specified as a time duration string. For example, '1s'
 would be 1 second, '10ms' would be 10 milliseconds, etc.</p>
+<hr />
 <h2 id="try"><code>try</code></h2>
 <pre><code class="yaml">type: try
 try: []
@@ -1904,6 +1965,7 @@ output of previous processors. This processor can be followed with a
 <a href="#catch">catch</a> processor for defining child processors to be applied
 only to failed messages.</p>
 <p>More information about error handing can be found <a href="../error_handling/">here</a>.</p>
+<hr />
 <h2 id="unarchive"><code>unarchive</code></h2>
 <pre><code class="yaml">type: unarchive
 unarchive:
@@ -1925,6 +1987,7 @@ and for each element of the array expands its contents into a new message.</p>
 <p>For the unarchive formats that contain file information (tar, zip), a metadata
 field is added to each message called <code>archive_filename</code> with the
 extracted filename.</p>
+<hr />
 <h2 id="while"><code>while</code></h2>
 <pre><code class="yaml">type: while
 while:
@@ -1951,6 +2014,7 @@ zero the loop is exited regardless of the condition result. If following a loop
 execution there are more than 1 message batches the condition is checked against
 the first batch only.</p>
 <p>You can find a <a href="../conditions">full list of conditions here</a>.</p>
+<hr />
 <h2 id="workflow"><code>workflow</code></h2>
 <pre><code class="yaml">type: workflow
 workflow:
@@ -1980,6 +2044,7 @@ is an array then it will be used as a whitelist of stages to apply, all other
 stages will be skipped.</p>
 <p>You can read more about workflows in Benthos
 <a href="../workflows/">in this document</a>.</p>
+<hr />
 <h2 id="xml"><code>xml</code></h2>
 <pre><code class="yaml">type: xml
 xml:

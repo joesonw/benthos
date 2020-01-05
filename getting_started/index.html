@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -209,83 +209,121 @@
 
 <h1 id="getting-started">Getting Started</h1>
 <h2 id="install">Install</h2>
-<h3 id="homebrew">Homebrew</h3>
-<p>On macOS, Benthos can be installed via Homebrew:</p>
-<pre><code class="shell">brew install benthos
+<p>The easiest way to install Benthos is with this handy script:</p>
+<pre><code class="sh">curl -Lsf https://sh.benthos.dev | bash
 </code></pre>
 
-<h3 id="pull-with-docker">Pull With Docker</h3>
+<p>Or you can grab an archive containing Benthos from the <a href="https://github.com/Jeffail/benthos/releases">releases page</a>.</p>
+<h3 id="docker">Docker</h3>
 <p>If you have docker installed you can pull the latest official Benthos image
 with:</p>
 <pre><code class="sh">docker pull jeffail/benthos
 docker run --rm -v /path/to/your/config.yaml:/benthos.yaml jeffail/benthos
 </code></pre>
 
-<h3 id="download-an-archive">Download an Archive</h3>
-<p>Otherwise you can pull an archive containing Benthos from the
-<a href="https://github.com/Jeffail/benthos/releases">releases page</a>.</p>
-<pre><code class="sh">curl -L https://github.com/Jeffail/benthos/releases/download/${VERSION}/benthos_${VERSION}_linux_amd64.tar.gz | tar xz
-./benthos -c ./yourconfig.yaml
-</code></pre>
-
-<h3 id="build-with-go">Build With Go</h3>
-<p>If you have Go version 1.11 or above you can build and install Benthos with:</p>
-<pre><code class="sh">go install github.com/Jeffail/benthos/cmd/benthos
-benthos -c ./yourconfig.yaml
+<h3 id="homebrew">Homebrew</h3>
+<p>On macOS, Benthos can be installed via Homebrew:</p>
+<pre><code class="sh">brew install benthos
 </code></pre>
 
 <h3 id="serverless">Serverless</h3>
 <p>For information about serverless deployments of Benthos check out the serverless
 section <a href="../serverless/">here</a>.</p>
 <h2 id="run">Run</h2>
-<p>A Benthos stream pipeline is configured with a single config file, you can
-generate a fresh one with <code>benthos --print-yaml</code> or <code>benthos --print-json</code>.</p>
-<p>The main sections that make up a pipeline are <code>input</code>, <code>buffer</code>, <code>pipeline</code> and
-<code>output</code>. If we were to pipe stdin directly to Kafka those sections might look
-like this:</p>
+<p>A Benthos stream pipeline is configured with a single
+<a href="../configuration/">config file</a>, you can generate a fresh one with:</p>
+<pre><code class="shell">benthos --print-yaml &gt; config.yaml
+</code></pre>
+
+<p>The main sections that make up a config are <code>input</code>, <code>pipeline</code> and <code>output</code>.
+When you generate a fresh config it'll simply pipe <code>stdin</code> to <code>stdout</code> like
+this:</p>
 <pre><code class="yaml">input:
   type: stdin
-buffer:
-  type: none
+
 pipeline:
-  threads: 1
   processors: []
+
 output:
-  kafka:
-    addresses:
-    - localhost:9092
-    topic: benthos_stream
+  type: stdout
 </code></pre>
 
-<p>You can execute this config with:</p>
-<pre><code class="sh">benthos -c ./yourconfig.yaml
+<p>Eventually we'll want to configure a more useful <a href="../inputs/">input</a> and
+<a href="../outputs/">output</a>, but for now this is useful for quickly testing processors.
+You can execute this config with:</p>
+<pre><code class="sh">benthos -c ./config.yaml
 </code></pre>
 
-<p>With this config you can write messages in the terminal and they will be sent to
-your chosen Kafka topic, how exciting! You can find out more about Benthos
-configuration files <a href="../configuration/">here</a>.</p>
-<p>Next, we might want to add some processing steps in order to mutate the
-messages. For example, we could add a <a href="../processors/#text"><code>text</code></a>
-processor that converts all text into upper case:</p>
+<p>Anything you write to stdin will get written unchanged to stdout, cool! Resist
+the temptation to play with this for hours, there's more stuff to try out.</p>
+<p>Next, let's add some processing steps in order to mutate messages. For example,
+we could add a <a href="../processors/#text"><code>text</code></a> processor that converts all text into upper
+case:</p>
 <pre><code class="yaml">input:
   type: stdin
-buffer:
-  type: none
+
 pipeline:
-  threads: 1
   processors:
-  - text:
-      operator: to_upper
+    - text:
+        operator: to_upper
+
 output:
-  kafka:
-    addresses:
-    - localhost:9092
-    topic: benthos_stream
+  type: stdout
 </code></pre>
 
-<p>Very useful! You can add as many <a href="../processors/">processing steps</a> as
-you like.</p>
-<p>Now that you are a Benthos expert check out all the other
+<p>Now your messages should come out in all caps, how whacky! IT'S LIKE BENTHOS IS
+SHOUTING BACK AT YOU!</p>
+<p>You can add as many <a href="../processors/">processing steps</a> as you like, and since
+processors are what make Benthos powerful they are worth experimenting with.
+Let's create a more advanced pipeline that works with JSON documents:</p>
+<pre><code class="yaml">input:
+  type: stdin
+
+pipeline:
+  processors:
+    - jmespath:
+        query: |
+          {
+            doc: @,
+            first_name: names[0],
+            last_name: names[-1]
+          }
+
+    - process_field:
+        path: first_name
+        processors:
+          - text:
+              operator: to_upper
+
+    - process_field:
+        path: last_name
+        processors:
+          - hash:
+              algorithm: sha256
+          - encode:
+              scheme: base64
+
+output:
+  type: stdout
+</code></pre>
+
+<p>First, we use a <a href="http://jmespath.org/">JMESPath</a> query to restructure our input
+JSON document. Next, we use <a href="../processors/#process_field"><code>process_field</code></a> to uppercase the
+value of <code>first_name</code>. Finally, we hash the value of <code>last_name</code> and base64
+encode the result.</p>
+<p>Try running that config with some sample documents:</p>
+<pre><code class="sh">echo '
+{&quot;id&quot;:&quot;1&quot;,&quot;names&quot;:[&quot;celine&quot;,&quot;dion&quot;]}
+{&quot;id&quot;:&quot;2&quot;,&quot;names&quot;:[&quot;chad&quot;, &quot;robert&quot;, &quot;kroeger&quot;]}' | benthos -c ./config.yaml
+</code></pre>
+
+<p>You should see (amongst some logs):</p>
+<pre><code class="sh">{&quot;doc&quot;:{&quot;id&quot;:&quot;1&quot;,&quot;names&quot;:[&quot;celine&quot;,&quot;dion&quot;]},&quot;first_name&quot;:&quot;CELINE&quot;,&quot;last_name&quot;:&quot;1VvPgCW9sityz5XAMGdI2BTA7/44Wb3cANKxqhiCo50=&quot;}
+{&quot;doc&quot;:{&quot;id&quot;:&quot;2&quot;,&quot;names&quot;:[&quot;chad&quot;,&quot;robert&quot;,&quot;kroeger&quot;]},&quot;first_name&quot;:&quot;CHAD&quot;,&quot;last_name&quot;:&quot;uXXg5wCKPjpyj/qbivPbD9H9CZ5DH/F0Q1Twytnt2hQ=&quot;}
+</code></pre>
+
+<p>How exciting! I don't know about you, but I'll need to lie down for a while. Now
+that you are a Benthos expert check out all the other
 <a href="..">cool stuff you can do</a>.</p></div>
         </div>
 

@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -301,18 +301,6 @@ in your config with environment variables like so:</p>
 
 <p>This is very useful for sharing configuration files across different deployment
 environments.</p>
-<p>It's also possible to use <code>type</code> fields for environment variable based feature
-toggles. For example, the following config:</p>
-<pre><code class="yaml">type: ${FEATURE:noop}
-jmespath:
-  query: '{ enveloped: @ }'
-text:
-  operator: set
-  text: &quot;Wrapped: ${!content}&quot;
-</code></pre>
-
-<p>Allows us to use the env var <code>FEATURE</code> to choose between two different processor
-steps (or neither.)</p>
 <h2 id="reusing-configuration-snippets">Reusing Configuration Snippets</h2>
 <p>It's possible to break a large configuration file into smaller parts with
 <a href="https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03">JSON references</a>. Benthos doesn't yet support the full
@@ -333,8 +321,7 @@ file_field_reference:
 <code>./config/foo.yaml</code>:</p>
 <pre><code class="yaml">pipeline:
   processors:
-  - type: cache
-    cache:
+  - cache:
       operator: get
       key: ${!json_field:id}
       cache: objects
@@ -345,8 +332,7 @@ file_field_reference:
 string value which is the path to our snippet:</p>
 <pre><code class="yaml">pipeline:
   processors:
-  - type: decompress
-    decompress:
+  - decompress:
       algorithm: gzip
 
   - &quot;$ref&quot;: &quot;./foo.yaml#/pipeline/processors/0&quot;
@@ -356,12 +342,10 @@ string value which is the path to our snippet:</p>
 configuration:</p>
 <pre><code class="yaml">pipeline:
   processors:
-  - type: decompress
-    decompress:
+  - decompress:
       algorithm: gzip
 
-  - type: cache
-    cache:
+  - cache:
       operator: get
       key: ${!json_field:id}
       cache: objects
@@ -376,8 +360,7 @@ to load. This works because environment variable interpolations within
 configurations are resolved <em>before</em> references are resolved.</p>
 <pre><code class="yaml">pipeline:
   processors:
-  - type: decompress
-    decompress:
+  - decompress:
       algorithm: gzip
 
   - &quot;$ref&quot;: &quot;./${TARGET_SNIPPET}#/pipeline/processors/0&quot;

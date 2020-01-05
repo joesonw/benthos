@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -221,9 +221,11 @@ a work in progress and should eventually expand so that all inputs have a way of
 doing so.</p>
 <p>A tracer config section looks like this:</p>
 <pre><code class="yaml">tracer:
-  type: foo
-  foo:
-    bar: baz
+  jaeger:
+    agent_address: localhost:6831
+    sampler_param: 1
+    sampler_type: const
+    service_name: benthos
 </code></pre>
 
 <p>WARNING: Although the configuration spec of this component is stable the format
@@ -243,6 +245,7 @@ jaeger:
 
 <p>Send spans to a <a href="https://www.jaegertracing.io/">Jaeger</a> agent.</p>
 <p>Available sampler types are: const, probabilistic, ratelimiting and remote.</p>
+<hr />
 <h2 id="none"><code>none</code></h2>
 <pre><code class="yaml">type: none
 none: {}

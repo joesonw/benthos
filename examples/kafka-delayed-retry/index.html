@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../../batching/">Message Batching</a>
+    <a href="../../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -296,8 +296,7 @@ pipeline:
           metadata_set(&quot;delay_for_s&quot;, delay_for)
         }
 
-  - type: sleep
-    sleep:
+  - sleep:
       duration: &quot;${!metadata:delay_for_s}s&quot;
 
   # TODO: Reprocess

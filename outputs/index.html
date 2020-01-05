@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -206,7 +206,6 @@
             <li><a href="#multiplexing-outputs">Multiplexing Outputs</a></li>
             <li><a href="#dead-letter-queues">Dead Letter Queues</a></li>
             <li><a href="#contents">Contents</a></li>
-            <li><a href="#amqp">amqp</a></li>
             <li><a href="#amqp_0_9">amqp_0_9</a></li>
             <li><a href="#broker">broker</a></li>
             <li><a href="#cache">cache</a></li>
@@ -257,11 +256,14 @@ the root of a Benthos config. However, the output can be a <a href="#broker">bro
 which combines multiple outputs under a chosen brokering pattern.</p>
 <p>An output config section looks like this:</p>
 <pre><code class="yaml">output:
-  type: foo
-  foo:
-    bar: baz
+  s3:
+    bucket: TODO
+    path: &quot;${!metadata:kafka_topic}/${!json_field:message.id}.json&quot;
+
+  # Optional list of processing steps
   processors:
-  - type: qux
+   - jmespath:
+       query: '{ message: @, meta: { link_count: length(links) } }'
 </code></pre>
 
 <h3 id="back-pressure">Back Pressure</h3>
@@ -271,8 +273,8 @@ until the issue is resolved.</p>
 <h3 id="retries">Retries</h3>
 <p>When a Benthos output fails to send a message the error is propagated back up to
 the input, where depending on the protocol it will either be pushed back to the
-source as a Noack (AMQP) or will be reattempted indefinitely with the commit
-withheld until success (Kafka).</p>
+source as a Noack (e.g. AMQP) or will be reattempted indefinitely with the
+commit withheld until success (e.g. Kafka).</p>
 <p>It's possible to instead have Benthos indefinitely retry an output until success
 with a <a href="#retry"><code>retry</code></a> output. Some other outputs, such as the
 <a href="#broker"><code>broker</code></a>, might also retry indefinitely depending on their
@@ -292,7 +294,6 @@ conditions please <a href="../conditions/">read the docs here</a>.</p>
 a <a href="#try"><code>try</code></a> output.</p>
 <h3 id="contents">Contents</h3>
 <ol>
-<li><a href="#amqp"><code>amqp</code></a></li>
 <li><a href="#amqp_0_9"><code>amqp_0_9</code></a></li>
 <li><a href="#broker"><code>broker</code></a></li>
 <li><a href="#cache"><code>cache</code></a></li>
@@ -332,28 +333,6 @@ a <a href="#try"><code>try</code></a> output.</p>
 <li><a href="#udp"><code>udp</code></a></li>
 <li><a href="#websocket"><code>websocket</code></a></li>
 </ol>
-<h2 id="amqp"><code>amqp</code></h2>
-<pre><code class="yaml">type: amqp
-amqp:
-  exchange: benthos-exchange
-  exchange_declare:
-    durable: true
-    enabled: false
-    type: direct
-  immediate: false
-  key: benthos-key
-  mandatory: false
-  persistent: false
-  tls:
-    client_certs: []
-    enabled: false
-    root_cas_file: &quot;&quot;
-    skip_cert_verify: false
-  url: amqp://guest:guest@localhost:5672/
-</code></pre>
-
-<p>DEPRECATED: This output is deprecated and scheduled for removal in Benthos V4.
-Please use <a href="#amqp_0_9"><code>amqp_0_9</code></a> instead.</p>
 <h2 id="amqp_0_9"><code>amqp_0_9</code></h2>
 <pre><code class="yaml">type: amqp_0_9
 amqp_0_9:
@@ -365,6 +344,7 @@ amqp_0_9:
   immediate: false
   key: benthos-key
   mandatory: false
+  max_in_flight: 1
   persistent: false
   tls:
     client_certs: []
@@ -385,6 +365,11 @@ then the declaration passively verifies that the settings match.</p>
 settings can be enabled in the <code>tls</code> section.</p>
 <p>The field 'key' can be dynamically set using function interpolations described
 <a href="../config_interpolation/#functions">here</a>.</p>
+<h3 id="performance">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="broker"><code>broker</code></h2>
 <pre><code class="yaml">type: broker
 broker:
@@ -413,11 +398,12 @@ listing them:</p>
         bar_field_2: value3
     - baz:
         baz_field_1: value4
+      # Processors only applied to messages sent to baz.
       processors:
-      # Processor only applied to messages sent to baz.
       - type: baz_processor
+
+  # Processors applied to messages sent to all brokered outputs.
   processors:
-  # Processor applied to messages sent to any brokered output.
   - type: some_processor
 </code></pre>
 
@@ -469,14 +455,16 @@ level, where they will be applied to <em>all</em> child outputs, as well as on t
 individual child outputs. If you have processors at both the broker level <em>and</em>
 on child outputs then the broker processors will be applied <em>before</em> the child
 nodes processors.</p>
+<hr />
 <h2 id="cache"><code>cache</code></h2>
 <pre><code class="yaml">type: cache
 cache:
   key: ${!count:items}-${!timestamp_unix_nano}
+  max_in_flight: 1
   target: &quot;&quot;
 </code></pre>
 
-<p>Stores message parts as items in a cache. Caches are configured within the
+<p>Stores messages in a cache. Caches are configured within the
 <a href="../caches/">resources section</a> and can target any of the following
 types:</p>
 <ul>
@@ -492,24 +480,31 @@ types:</p>
   cache:
     target: foo
     key: ${!json_field:document.id}
+
 resources:
   caches:
     foo:
       memcached:
         addresses:
-        - localhost:11211
+          - localhost:11211
         ttl: 60
 </code></pre>
 
 <p>In order to create a unique <code>key</code> value per item you should use
 function interpolations described <a href="../config_interpolation/#functions">here</a>.
 When sending batched messages the interpolations are performed per message part.</p>
+<h3 id="performance_1">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="drop"><code>drop</code></h2>
 <pre><code class="yaml">type: drop
 drop: {}
 </code></pre>
 
 <p>Drops all messages.</p>
+<hr />
 <h2 id="drop_on_error"><code>drop_on_error</code></h2>
 <pre><code class="yaml">type: drop_on_error
 drop_on_error: {}
@@ -530,6 +525,7 @@ message is dropped entirely:</p>
         type: foo
 </code></pre>
 
+<hr />
 <h2 id="dynamic"><code>dynamic</code></h2>
 <pre><code class="yaml">type: dynamic
 dynamic:
@@ -548,6 +544,7 @@ each message will be delivered to each dynamic output.</p>
 methods on the <code>/outputs/{output_id}</code> endpoint. When using POST the
 body of the request should be a JSON configuration for the output, if the output
 already exists it will be changed.</p>
+<hr />
 <h2 id="dynamodb"><code>dynamodb</code></h2>
 <pre><code class="yaml">type: dynamodb
 dynamodb:
@@ -555,6 +552,13 @@ dynamodb:
     initial_interval: 1s
     max_elapsed_time: 30s
     max_interval: 5s
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   credentials:
     id: &quot;&quot;
     profile: &quot;&quot;
@@ -564,6 +568,7 @@ dynamodb:
     token: &quot;&quot;
   endpoint: &quot;&quot;
   json_map_columns: {}
+  max_in_flight: 1
   max_retries: 3
   region: eu-west-1
   string_columns: {}
@@ -608,6 +613,14 @@ found within a document the column will not be populated.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_2">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="elasticsearch"><code>elasticsearch</code></h2>
 <pre><code class="yaml">type: elasticsearch
 elasticsearch:
@@ -630,9 +643,17 @@ elasticsearch:
     enabled: false
     password: &quot;&quot;
     username: &quot;&quot;
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   healthcheck: true
   id: ${!count:elastic_ids}-${!timestamp_unix}
   index: benthos_index
+  max_in_flight: 1
   max_retries: 0
   pipeline: &quot;&quot;
   sniff: true
@@ -654,6 +675,14 @@ allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
 <p>If the configured target is a managed AWS Elasticsearch cluster, you may need
 to set <code>sniff</code> and <code>healthcheck</code> to false for connections to succeed.</p>
+<h3 id="performance_3">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="file"><code>file</code></h2>
 <pre><code class="yaml">type: file
 file:
@@ -669,6 +698,7 @@ would be written as:</p>
 <p>foo\n
 bar\n
 baz\n\n</p>
+<hr />
 <h2 id="files"><code>files</code></h2>
 <pre><code class="yaml">type: files
 files:
@@ -681,21 +711,29 @@ file for each part you need to generate unique file names. This can be done by
 using function interpolations on the <code>path</code> field as described
 <a href="../config_interpolation/#functions">here</a>. When sending batched messages
 these interpolations are performed per message part.</p>
+<hr />
 <h2 id="gcp_pubsub"><code>gcp_pubsub</code></h2>
 <pre><code class="yaml">type: gcp_pubsub
 gcp_pubsub:
+  max_in_flight: 1
   project: &quot;&quot;
   topic: &quot;&quot;
 </code></pre>
 
 <p>Sends messages to a GCP Cloud Pub/Sub topic. Metadata from messages are sent as
 attributes.</p>
+<h3 id="performance_4">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="hdfs"><code>hdfs</code></h2>
 <pre><code class="yaml">type: hdfs
 hdfs:
   directory: &quot;&quot;
   hosts:
   - localhost:9000
+  max_in_flight: 1
   path: ${!count:files}-${!timestamp_unix_nano}.txt
   user: benthos_hdfs
 </code></pre>
@@ -705,6 +743,11 @@ with the path specified with the 'path' field, in order to have a different path
 for each object you should use function interpolations described
 <a href="../config_interpolation/#functions">here</a>. When sending batched messages the
 interpolations are performed per message part.</p>
+<h3 id="performance_5">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="http_client"><code>http_client</code></h2>
 <pre><code class="yaml">type: http_client
 http_client:
@@ -714,10 +757,18 @@ http_client:
     enabled: false
     password: &quot;&quot;
     username: &quot;&quot;
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   copy_response_headers: false
   drop_on: []
   headers:
     Content-Type: application/octet-stream
+  max_in_flight: 1
   max_retry_backoff: 300s
   oauth:
     access_token: &quot;&quot;
@@ -761,6 +812,14 @@ message has multiple parts the request will be sent according to
 source by setting <code>propagate_response</code> to <code>true</code>. Only inputs that
 support <a href="../sync_responses/">synchronous responses</a> are able to make use of
 these propagated responses.</p>
+<h3 id="performance_6">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="http_server"><code>http_server</code></h2>
 <pre><code class="yaml">type: http_server
 http_server:
@@ -776,11 +835,15 @@ http_server:
 <p>Sets up an HTTP server that will send messages over HTTP(S) GET requests. HTTP
 2.0 is supported when using TLS, which is enabled when key and cert files are
 specified.</p>
-<p>You can leave the 'address' config field blank in order to use the default
-service, but this will ignore TLS options.</p>
-<p>You can receive a single, discrete message on the configured 'path' endpoint, or
-receive a constant stream of line delimited messages on the configured
-'stream_path' endpoint.</p>
+<p>You can leave the <code>address</code> config field blank in order to use the
+default service wide server address, but this will ignore TLS options.</p>
+<p>Three endpoints will be registered at the paths specified by the fields
+<code>path</code>, <code>stream_path</code> and <code>ws_path</code>. Which allow you to consume a
+single message batch, a continuous stream of line delimited messages, or a
+websocket of messages for each request respectively.</p>
+<p>When messages are batched the <code>path</code> endpoint encodes the batch
+according to <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">RFC1341</a>.</p>
+<hr />
 <h2 id="inproc"><code>inproc</code></h2>
 <pre><code class="yaml">type: inproc
 inproc: &quot;&quot;
@@ -794,6 +857,7 @@ feedback loops can lead to deadlocks in your message flow.</p>
 <p>It is possible to connect multiple inputs to the same inproc ID, but only one
 output can connect to an inproc ID, and will replace existing outputs if a
 collision occurs.</p>
+<hr />
 <h2 id="kafka"><code>kafka</code></h2>
 <pre><code class="yaml">type: kafka
 kafka:
@@ -804,12 +868,20 @@ kafka:
     initial_interval: 0s
     max_elapsed_time: 5s
     max_interval: 1s
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   client_id: benthos_kafka_output
   compression: none
   key: &quot;&quot;
-  max_msg_bytes: 1e+06
+  max_in_flight: 1
+  max_msg_bytes: 1000000
   max_retries: 0
-  round_robin_partitions: false
+  partitioner: fnv1a_hash
   sasl:
     enabled: false
     password: &quot;&quot;
@@ -824,22 +896,20 @@ kafka:
   topic: benthos_stream
 </code></pre>
 
-<p>The kafka output type writes messages to a kafka broker, these messages are
-acknowledged, which is propagated back to the input. The config field
+<p>The kafka output type writes a batch of messages to Kafka brokers and waits for
+acknowledgement before propagating it back to the input. The config field
 <code>ack_replicas</code> determines whether we wait for acknowledgement from all
 replicas or just a single broker.</p>
 <p>It is possible to specify a compression codec to use out of the following
-options: none, snappy, lz4 and gzip.</p>
-<p>If the field <code>key</code> is not empty then each message will be given its
-contents as a key.</p>
+options: <code>none</code>, <code>snappy</code>, <code>lz4</code> and <code>gzip</code>.</p>
 <p>Both the <code>key</code> and <code>topic</code> fields can be dynamically set using
 function interpolations described <a href="../config_interpolation/#functions">here</a>.
 When sending batched messages these interpolations are performed per message
 part.</p>
-<p>By default the paritioner will select partitions based on a hash of the key
-value. If the key is empty then a partition is chosen at random. You can
-alternatively force the partitioner to round-robin partitions with the field
-<code>round_robin_partitions</code>.</p>
+<p>The <code>partitioner</code> field determines how messages are delegated to a
+partition. Options are <code>fnv1a_hash</code>, <code>murmur2_hash</code>, <code>random</code> and
+<code>round_robin</code>. When a hash partitioner is selected but a message key
+is empty then a random partition is chosen.</p>
 <h3 id="tls">TLS</h3>
 <p>Custom TLS settings can be used to override system defaults. This includes
 providing a collection of root certificate authorities, providing a list of
@@ -854,6 +924,14 @@ client_certs:
     key: bar
 </code></pre>
 
+<h3 id="performance_7">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="kinesis"><code>kinesis</code></h2>
 <pre><code class="yaml">type: kinesis
 kinesis:
@@ -861,6 +939,13 @@ kinesis:
     initial_interval: 1s
     max_elapsed_time: 30s
     max_interval: 5s
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   credentials:
     id: &quot;&quot;
     profile: &quot;&quot;
@@ -870,6 +955,7 @@ kinesis:
     token: &quot;&quot;
   endpoint: &quot;&quot;
   hash_key: &quot;&quot;
+  max_in_flight: 1
   max_retries: 0
   partition_key: &quot;&quot;
   region: eu-west-1
@@ -886,6 +972,14 @@ interpolations are performed per message part.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_8">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="kinesis_firehose"><code>kinesis_firehose</code></h2>
 <pre><code class="yaml">type: kinesis_firehose
 kinesis_firehose:
@@ -893,6 +987,13 @@ kinesis_firehose:
     initial_interval: 1s
     max_elapsed_time: 30s
     max_interval: 5s
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   credentials:
     id: &quot;&quot;
     profile: &quot;&quot;
@@ -901,6 +1002,7 @@ kinesis_firehose:
     secret: &quot;&quot;
     token: &quot;&quot;
   endpoint: &quot;&quot;
+  max_in_flight: 1
   max_retries: 0
   region: eu-west-1
   stream: &quot;&quot;
@@ -912,10 +1014,19 @@ kinesis_firehose:
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_9">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="mqtt"><code>mqtt</code></h2>
 <pre><code class="yaml">type: mqtt
 mqtt:
   client_id: benthos_output
+  max_in_flight: 1
   password: &quot;&quot;
   qos: 1
   topic: benthos_topic
@@ -928,10 +1039,16 @@ mqtt:
 <p>The <code>topic</code> field can be dynamically set using function interpolations
 described <a href="../config_interpolation/#functions">here</a>. When sending batched
 messages these interpolations are performed per message part.</p>
+<h3 id="performance_10">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="nanomsg"><code>nanomsg</code></h2>
 <pre><code class="yaml">type: nanomsg
 nanomsg:
   bind: false
+  max_in_flight: 1
   poll_timeout: 5s
   socket_type: PUSH
   urls:
@@ -941,9 +1058,15 @@ nanomsg:
 <p>The scalability protocols are common communication patterns. This output should
 be compatible with any implementation, but specifically targets Nanomsg.</p>
 <p>Currently only PUSH and PUB sockets are supported.</p>
+<h3 id="performance_11">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="nats"><code>nats</code></h2>
 <pre><code class="yaml">type: nats
 nats:
+  max_in_flight: 1
   subject: benthos_messages
   urls:
   - nats://127.0.0.1:4222
@@ -953,20 +1076,32 @@ nats:
 For at-least-once behaviour with NATS look at NATS Stream.</p>
 <p>This output will interpolate functions within the subject field, you
 can find a list of functions <a href="../config_interpolation/#functions">here</a>.</p>
+<h3 id="performance_12">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="nats_stream"><code>nats_stream</code></h2>
 <pre><code class="yaml">type: nats_stream
 nats_stream:
   client_id: benthos_client
   cluster_id: test-cluster
+  max_in_flight: 1
   subject: benthos_messages
   urls:
   - nats://localhost:4222
 </code></pre>
 
 <p>Publish to a NATS Stream subject.</p>
+<h3 id="performance_13">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="nsq"><code>nsq</code></h2>
 <pre><code class="yaml">type: nsq
 nsq:
+  max_in_flight: 1
   nsqd_tcp_address: localhost:4150
   topic: benthos_messages
   user_agent: benthos_producer
@@ -976,11 +1111,17 @@ nsq:
 using function interpolations described
 <a href="../config_interpolation/#functions">here</a>. When sending batched messages
 these interpolations are performed per message part.</p>
+<h3 id="performance_14">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="redis_hash"><code>redis_hash</code></h2>
 <pre><code class="yaml">type: redis_hash
 redis_hash:
   fields: {}
   key: &quot;&quot;
+  max_in_flight: 1
   url: tcp://localhost:6379
   walk_json_object: false
   walk_metadata: false
@@ -1014,19 +1155,31 @@ representation of their value and adds them to the list of hash fields to set.</
 <li>Explicit fields</li>
 </ol>
 <p>Where latter stages will overwrite matching field names of a former stage.</p>
+<h3 id="performance_15">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="redis_list"><code>redis_list</code></h2>
 <pre><code class="yaml">type: redis_list
 redis_list:
   key: benthos_list
+  max_in_flight: 1
   url: tcp://localhost:6379
 </code></pre>
 
 <p>Pushes messages onto the end of a Redis list (which is created if it doesn't
 already exist) using the RPUSH command.</p>
+<h3 id="performance_16">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="redis_pubsub"><code>redis_pubsub</code></h2>
 <pre><code class="yaml">type: redis_pubsub
 redis_pubsub:
   channel: benthos_chan
+  max_in_flight: 1
   url: tcp://localhost:6379
 </code></pre>
 
@@ -1034,10 +1187,16 @@ redis_pubsub:
 guarantee that messages have been received.</p>
 <p>This output will interpolate functions within the channel field, you
 can find a list of functions <a href="../config_interpolation/#functions">here</a>.</p>
+<h3 id="performance_17">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="redis_streams"><code>redis_streams</code></h2>
 <pre><code class="yaml">type: redis_streams
 redis_streams:
   body_key: body
+  max_in_flight: 1
   max_length: 0
   stream: benthos_stream
   url: tcp://localhost:6379
@@ -1052,6 +1211,11 @@ efficiency.</p>
 key to be set to the body of the message. All metadata fields of the message
 will also be set as key/value pairs, if there is a key collision between
 a metadata item and the body then the body takes precedence.</p>
+<h3 id="performance_18">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="retry"><code>retry</code></h2>
 <pre><code class="yaml">type: retry
 retry:
@@ -1074,7 +1238,8 @@ the event of a failed send. We might, for example, have a dedupe processor that
 we want to avoid reapplying to the same message more than once in the pipeline.</p>
 <p>Rather than retrying the same output you may wish to retry the send using a
 different output target (a dead letter queue). In which case you should instead
-use the <a href="#broker"><code>broker</code></a> output type with the pattern 'try'.</p>
+use the <a href="#try"><code>try</code></a> output type.</p>
+<hr />
 <h2 id="s3"><code>s3</code></h2>
 <pre><code class="yaml">type: s3
 s3:
@@ -1091,8 +1256,10 @@ s3:
   endpoint: &quot;&quot;
   force_path_style_urls: false
   kms_key_id: &quot;&quot;
+  max_in_flight: 1
   path: ${!count:files}-${!timestamp_unix_nano}.txt
   region: eu-west-1
+  storage_class: STANDARD
   timeout: 5s
 </code></pre>
 
@@ -1101,13 +1268,18 @@ with the path specified with the <code>path</code> field.</p>
 <p>In order to have a different path for each object you should use function
 interpolations described <a href="../config_interpolation/#functions">here</a>, which are
 calculated per message of a batch.</p>
-<p>The fields <code>content_type</code> and <code>content_encoding</code> can also be set
-dynamically using function interpolation.</p>
+<p>The fields <code>content_type</code>, <code>content_encoding</code> and <code>storage_class</code> can
+also be set dynamically using function interpolation.</p>
 <h3 id="credentials_3">Credentials</h3>
 <p>By default Benthos will use a shared credentials file when connecting to AWS
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_19">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="sns"><code>sns</code></h2>
 <pre><code class="yaml">type: sns
 sns:
@@ -1119,6 +1291,7 @@ sns:
     secret: &quot;&quot;
     token: &quot;&quot;
   endpoint: &quot;&quot;
+  max_in_flight: 1
   region: eu-west-1
   timeout: 5s
   topic_arn: &quot;&quot;
@@ -1130,6 +1303,11 @@ sns:
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_20">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<hr />
 <h2 id="sqs"><code>sqs</code></h2>
 <pre><code class="yaml">type: sqs
 sqs:
@@ -1137,6 +1315,13 @@ sqs:
     initial_interval: 1s
     max_elapsed_time: 30s
     max_interval: 5s
+  batching:
+    byte_size: 0
+    condition:
+      type: static
+      static: false
+    count: 1
+    period: &quot;&quot;
   credentials:
     id: &quot;&quot;
     profile: &quot;&quot;
@@ -1145,6 +1330,7 @@ sqs:
     secret: &quot;&quot;
     token: &quot;&quot;
   endpoint: &quot;&quot;
+  max_in_flight: 1
   max_retries: 0
   message_deduplication_id: &quot;&quot;
   message_group_id: &quot;&quot;
@@ -1165,6 +1351,14 @@ resolved individually for each message of a batch.</p>
 services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 <a href="../aws/">in this document</a>.</p>
+<h3 id="performance_21">Performance</h3>
+<p>This output benefits from sending multiple messages in flight in parallel for
+improved performance. You can tune the max number of in flight messages with the
+field <code>max_in_flight</code>.</p>
+<p>This output benefits from sending messages as a batch for improved performance.
+Batches can be formed at both the input and output level. You can find out more
+<a href="../batching/">in this doc</a>.</p>
+<hr />
 <h2 id="stdout"><code>stdout</code></h2>
 <pre><code class="yaml">type: stdout
 stdout:
@@ -1179,6 +1373,7 @@ as:</p>
 <p>foo\n
 bar\n
 baz\n\n</p>
+<hr />
 <h2 id="switch"><code>switch</code></h2>
 <pre><code class="yaml">type: switch
 switch:
@@ -1239,6 +1434,7 @@ output returns an error the switch output also returns an error by setting
 <code>retry_until_success</code> to <code>false</code>. This allows you to
 wrap the switch with a <code>try</code> broker, but care must be taken to ensure
 duplicate messages aren't introduced during error conditions.</p>
+<hr />
 <h2 id="sync_response"><code>sync_response</code></h2>
 <pre><code class="yaml">type: sync_response
 sync_response: {}
@@ -1273,6 +1469,7 @@ output:
 <code>/post</code> Benthos would send it unchanged to the topic
 <code>foo_topic</code> and also respond with 'HELLO WORLD'.</p>
 <p>For more information please read <a href="../sync_responses/">Synchronous Responses</a>.</p>
+<hr />
 <h2 id="tcp"><code>tcp</code></h2>
 <pre><code class="yaml">type: tcp
 tcp:
@@ -1283,6 +1480,7 @@ tcp:
 connecting to a server.</p>
 <p>If batched messages are sent the final message of the batch will be followed by
 two line breaks in order to indicate the end of the batch.</p>
+<hr />
 <h2 id="try"><code>try</code></h2>
 <pre><code class="yaml">type: try
 try: []
@@ -1313,6 +1511,7 @@ could use this pattern:</p>
       path: /usr/local/benthos/everything_failed.jsonl
 </code></pre>
 
+<hr />
 <h2 id="udp"><code>udp</code></h2>
 <pre><code class="yaml">type: udp
 udp:
@@ -1323,6 +1522,7 @@ udp:
 connecting to a server.</p>
 <p>If batched messages are sent the final message of the batch will be followed by
 two line breaks in order to indicate the end of the batch.</p>
+<hr />
 <h2 id="websocket"><code>websocket</code></h2>
 <pre><code class="yaml">type: websocket
 websocket:

@@ -8,7 +8,7 @@
         <meta name="author" content="Ashley Jeffs">
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Message Batching - Benthos</title>
+        <title>Batching - Benthos</title>
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -137,7 +137,7 @@
 </li>
                                     
 <li class="active">
-    <a href="./">Message Batching</a>
+    <a href="./">Batching</a>
 </li>
                                     
 <li >
@@ -201,21 +201,131 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#message-batching">Message Batching</a></li>
-            <li><a href="#creating-batches">Creating Batches</a></li>
-            <li><a href="#shrinking-batches">Shrinking Batches</a></li>
-            <li><a href="#archiving-batches">Archiving Batches</a></li>
-            <li><a href="#processing-batches">Processing Batches</a></li>
+            <li><a href="#performance">Performance</a></li>
+            <li><a href="#grouped-message-processing">Grouped Message Processing</a></li>
+            <li><a href="#compatibility">Compatibility</a></li>
+            <li><a href="#batch-policy">Batch Policy</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
 <h1 id="message-batching">Message Batching</h1>
+<p>Benthos is able to join sources and sinks with sometimes conflicting batching behaviours without sacrificing its strong delivery guarantees. It's also able to perform powerful processing functions across batches of messages such as grouping, archiving and reduction. Therefore, batching within Benthos is a mechanism that serves multiple purposes:</p>
+<ol>
+<li><a href="#performance">Performance (throughput)</a></li>
+<li><a href="#grouped-message-processing">Grouped message processing</a></li>
+<li><a href="#compatibility">Compatibility (mixing multi and single part message protocols)</a></li>
+</ol>
+<h2 id="performance">Performance</h2>
+<p>For most users the only benefit of batching messages is improving throughput over your output protocol. For some protocols this can happen in the background and requires no configuration from you. However, if an output has a <code>batching</code> configuration block this means it benefits from batching and requires you to specify how you'd like your batches to be formed by configuring a <a href="#batch-policy">batching policy</a>:</p>
+<pre><code class="yaml">output:
+  foo:
+    # Either send batches when they reach 10 messages or when 100ms has passed
+    # since the last batch.
+    batching:
+      count: 10
+      period: 100ms
+</code></pre>
+
+<p>However, a small number of inputs such as <a href="../inputs/#kafka"><code>kafka</code></a> must be consumed sequentially (in this case by partition) and therefore benefit from specifying your batch policy at the input level instead:</p>
+<pre><code class="yaml">input:
+  kafka:
+    addresses: [ todo:9092 ]
+    topic: baz
+    batching:
+      count: 10
+      period: 100ms
+
+output:
+  type: foo
+</code></pre>
+
+<p>Inputs that behave this way are documented as such and have a <code>batching</code> configuration block.</p>
+<p>Sometimes you may prefer to create your batches before processing in order to benefit from <a href="#grouped-message-processing">batch wide processing</a>, in which case if your input doesn't already support <a href="#batch-policy">a batch policy</a> you can instead use a <a href="../inputs/#broker"><code>broker</code></a>, which also allows you to combine inputs with a single batch policy:</p>
+<pre><code class="yaml">input:
+  broker:
+    inputs:
+      - type: foo
+      - type: bar
+    batching:
+      count: 50
+      period: 500ms
+</code></pre>
+
+<p>This also works the same with <a href="../outputs/#broker">output brokers</a>.</p>
+<h2 id="grouped-message-processing">Grouped Message Processing</h2>
+<p>One of the more powerful features of Benthos is that all processors are "batch aware", which means processors that operate on single messages can be configured using the <code>parts</code> field to only operate on select messages of a batch:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    # This processor only acts on the first message of a batch
+    - jmespath:
+        parts: [ 0 ]
+        query: &quot;{ nested: @, links: join(', ', data.urls) }&quot;
+</code></pre>
+
+<p>And some <a href="../config_interpolation/#functions">function interpolation</a> operations are evaluated batch wide:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    # Set the field `common_foo` of every message of the batch to the value of
+    # `body.source_id` of the last message of the batch.
+    - json:
+        operator: set
+        path: common_foo
+        value: &quot;${!json_field:body.source_id,-1}&quot;
+</code></pre>
+
+<p>You can also avoid this behaviour with the <a href="../processors/#for_each"><code>for_each</code> processor</a>.</p>
+<p>There's a vast number of processors that specialise in operations across batches such as <a href="../processors/#group_by">grouping</a>, <a href="../processors/#archive">archiving</a>, <a href="../processors/#merge_json">joining</a> and more. For example, the following processors group a batch of messages according to a metadata field and compresses them into separate <code>.tar.gz</code> archives:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+  - group_by_value:
+      value: ${!metadata:kafka_partition}
+  - archive:
+      format: tar
+  - compress:
+      algorithm: gzip
+
+output:
+  s3:
+    bucket: TODO
+    path: docs/${!metadata:kafka_partition}/${!count:files}-${!timestamp_unix_nano}.tar.gz
+</code></pre>
+
+<h2 id="compatibility">Compatibility</h2>
 <p>Benthos is able to read and write over protocols that support multiple part messages, and all payloads travelling through Benthos are represented as a multiple part message. Therefore, all components within Benthos are able to work with multiple parts in a message as standard.</p>
 <p>When messages reach an output that <em>doesn't</em> support multiple parts the message is broken down into an individual message per part, and then one of two behaviours happen depending on the output. If the output supports batch sending messages then the collection of messages are sent as a single batch. Otherwise, Benthos falls back to sending the messages sequentially in multiple, individual requests.</p>
 <p>This behaviour means that not only can multiple part message protocols be easily matched with single part protocols, but also the concept of multiple part messages and message batches are interchangeable within Benthos.</p>
-<h2 id="creating-batches">Creating Batches</h2>
-<p>Most input types have some way of creating batches of messages from their feeds. These input specific methods are usually the most efficient and should therefore be preferred.</p>
-<h3 id="batch-policy">Batch Policy</h3>
+<h3 id="shrinking-batches">Shrinking Batches</h3>
+<p>A message batch (or multiple part message) can be broken down into smaller batches using the <a href="../processors/#split"><code>split</code></a> processor:</p>
+<pre><code class="yaml">input:
+  # Consume messages that arrive in three parts.
+  type: foo
+  processors:
+    # Drop the third part
+    - select_parts:
+        parts: [ 0, 1 ]
+    # Then break our message parts into individual messages
+    - split:
+        count: 1
+</code></pre>
+
+<p>This is also useful when your input source creates batches that are too large for your output protocol:</p>
+<pre><code class="yaml">input:
+  s3:
+    bucket: todo
+
+pipeline:
+  processors:
+    - decompress:
+        algorith: gzip
+    - unarchive:
+        format: tar
+    # Limit batch sizes to 5MB
+    - split:
+        byte_size: 5_000_000
+</code></pre>
+
+<h2 id="batch-policy">Batch Policy</h2>
 <p>When an input component has a config field <code>batching</code> that means it supports a batch policy. This is a mechanism that allows you to configure exactly how your batching should work.</p>
 <p>Batches are considered complete and will be flushed downstream when either of the following conditions are met:</p>
 <ul>
@@ -225,7 +335,7 @@
 <li>The <code>period</code> field is non-empty and the time since the last batch exceeds its value.</li>
 </ul>
 <p>This allows you to combine conditions:</p>
-<pre><code class="yaml">input:
+<pre><code class="yaml">output:
   foo:
     # Either send batches when they reach 10 messages or when 100ms has passed
     # since the last batch.
@@ -234,75 +344,7 @@
       period: 100ms
 </code></pre>
 
-<p>During shutdown any remaining messages waiting for a batch to complete will be flushed down the pipeline.</p>
-<h3 id="combined-batching">Combined Batching</h3>
-<p>Inputs that do not support their own batch policy can instead be batched using an <a href="../inputs/#broker">input <code>broker</code></a>, which also allows you to combine input feeds into shared batching mechanisms:</p>
-<pre><code class="yaml">input:
-  broker:
-    inputs:
-      - foo:
-          bar: baz
-      - bep:
-          qux: quz 
-    batching:
-      count: 50
-      period: 500ms
-</code></pre>
-
-<p>Some inputs do not support broker based batching and will specify this in their documentation.</p>
-<h3 id="batching-after-processing">Batching After Processing</h3>
-<p>When using inputs that support broker based batching you can choose to batch at the end of your processing with an <a href="../outputs/#broker">output <code>broker</code></a>:</p>
-<pre><code class="yaml">input:
-  type: foo
-
-pipeline:
-  processors:
-    - filter:
-        text:
-          operator: contains
-          value: bar
-
-output:
-  broker:
-    pattern: fan_out
-    outputs:
-      - foo:
-          bar: baz
-    batching:
-      count: 50
-      period: 500ms
-</code></pre>
-
-<h2 id="shrinking-batches">Shrinking Batches</h2>
-<p>A message batch can be broken down into smaller batches using the <a href="../processors/#split"><code>split</code></a> processor:</p>
-<pre><code class="yaml"># Batch messages into one second bursts
-input:
-  foo:
-    batching:
-      period: 1s
-  processors:
-    # Then break them down into smaller batches of max size 10
-    - split:
-        count: 10
-</code></pre>
-
-<h2 id="archiving-batches">Archiving Batches</h2>
-<p>Batches of messages can be condensed into a single message part using a selected scheme such as <code>tar</code> with the <a href="../processors/#archive"><code>archive</code></a> processor, the opposite is also possible with the <a href="../processors/#unarchive"><code>unarchive</code></a> processor.</p>
-<p>This allows you to send and receive message batches over protocols that do not support batching or multiple part messages.</p>
-<h2 id="processing-batches">Processing Batches</h2>
-<p>Most processors will perform the same action on each message part of a batch, and therefore they behave the same regardless of whether they see a single message or a batch of plenty.</p>
-<p>However, some processors execute across an entire batch and this might be undesirable. For example, imagine we batch our messages for the purpose of throughput optimisation but also need to perform deduplication on the payloads. The <code>dedupe</code> processor works batch wide, so in this case we need to force the processor to execute on each message individually. We can do this with the <a href="../processors/#for_each"><code>for_each</code></a> processor:</p>
-<pre><code class="yaml">input:
-  foo:
-    batching:
-      count: 10
-      period: 100ms
-  processors:
-  - for_each:
-    - dedupe:
-        cache: foocache
-        key: ${!json_field:foo.bar}
-</code></pre></div>
+<p>During shutdown any remaining messages waiting for a batch to complete will be flushed down the pipeline.</p></div>
         </div>
 
         <footer class="col-md-12">

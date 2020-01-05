@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../../batching/">Message Batching</a>
+    <a href="../../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -236,19 +236,6 @@ you have built a custom solution.</p>
 you will need to fill in the <code>sqs_envelope_path</code>, which is the JSON path inside
 an SNS message that contains the enveloped S3 event. The value of
 <code>sqs_envelope_path</code> should be <code>Message</code> when using the standard AWS set up.</p>
-<p>This example uses a single consumer, but if the throughput isn't high enough to
-keep up with the bucket it is possible to use a <code>broker</code> type to have multiple
-parallel consumers:</p>
-<pre><code class="yaml">input:
-  broker:
-    copies: 8 # Increase this to gain more parallel consumers
-    inputs:
-    - s3:
-      ... etc
-</code></pre>
-
-<p>You can have any number of consumers of a bucket and messages (archives) will
-automatically be distributed amongst them via the SQS queue.</p>
 <h2 id="pipeline">Pipeline</h2>
 <pre><code class="yaml">pipeline:
   threads: 4 # Try to match the number of available logical CPU cores

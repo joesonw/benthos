@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -219,12 +219,10 @@ such as Statsd, Prometheus, or for debugging purposes an HTTP endpoint that
 exposes a JSON object of metrics.</p>
 <p>A metrics config section looks like this:</p>
 <pre><code class="yaml">metrics:
-  type: statsd
   statsd:
     prefix: foo
     address: localhost:8125
     flush_period: 100ms
-    network: udp
 </code></pre>
 
 <p>Benthos exposes lots of metrics and their paths will depend on your pipeline
@@ -257,6 +255,7 @@ to allow none of the latency based metrics with the pattern
 <h3 id="debugging">Debugging</h3>
 <p>In order to see logs breaking down which metrics are registered and whether they
 are blocked by your blacklists enable logging at the TRACE level.</p>
+<hr />
 <h2 id="http_server"><code>http_server</code></h2>
 <pre><code class="yaml">type: http_server
 http_server:
@@ -280,6 +279,7 @@ this:</p>
 }
 </code></pre>
 
+<hr />
 <h2 id="prometheus"><code>prometheus</code></h2>
 <pre><code class="yaml">type: prometheus
 prometheus:
@@ -297,8 +297,9 @@ instead be underscores.</p>
 metrics to a <a href="https://prometheus.io/docs/instrumenting/pushing/">Prometheus Push Gateway</a>
 once Benthos shuts down. It is also possible to specify a
 <code>push_interval</code> which results in periodic pushes.</p>
-<p>The Push Gateway This is useful for when Benthos instances are short lived. Do
-not include the "/metrics/jobs/..." path in the push URL.</p>
+<p>The Push Gateway is useful for when Benthos instances are short lived. Do not
+include the "/metrics/jobs/..." path in the push URL.</p>
+<hr />
 <h2 id="rename"><code>rename</code></h2>
 <pre><code class="yaml">type: rename
 rename:
@@ -329,12 +330,17 @@ renamed path into the label values.</p>
 <p>For example, in order to replace the paths 'foo.bar.0.zap' and 'foo.baz.1.zap'
 with 'zip.bar' and 'zip.baz' respectively, and store the respective values '0'
 and '1' under the label key 'index' we could use this config:</p>
-<pre><code class="yaml">rename:
-  by_regexp:
-  - pattern: &quot;foo\\.([a-z]*)\\.([a-z]*)\\.zap&quot;
-    value: &quot;zip.$1&quot;
-    to_label:
-      index: $2
+<pre><code class="yaml">metrics:
+  rename:
+    by_regexp:
+      - pattern: &quot;foo\\.([a-z]*)\\.([a-z]*)\\.zap&quot;
+        value: &quot;zip.$1&quot;
+        to_label:
+          index: $2
+    child:
+      statsd:
+        prefix: foo
+        address: localhost:8125
 </code></pre>
 
 <p>These labels will only be injected into metrics registered without pre-existing
@@ -344,6 +350,7 @@ set via renaming.</p>
 <h3 id="debugging_1">Debugging</h3>
 <p>In order to see logs breaking down which metrics are registered and whether they
 are renamed enable logging at the TRACE level.</p>
+<hr />
 <h2 id="statsd"><code>statsd</code></h2>
 <pre><code class="yaml">type: statsd
 statsd:
@@ -364,6 +371,7 @@ to be updated when migrating to the new library.</p>
 <p>The 'network' field is deprecated and scheduled for removal. If you currently
 rely on sending Statsd metrics over TCP and want it to be supported long term
 please <a href="https://github.com/Jeffail/benthos/issues">raise an issue</a>.</p>
+<hr />
 <h2 id="stdout"><code>stdout</code></h2>
 <pre><code class="yaml">type: stdout
 stdout:
@@ -388,6 +396,7 @@ as Elasticsearch.</p>
 are emitted when Benthos closes.</p>
 <p>flush_metrics dictates whether counter and timing metrics are reset to 0 after
 they are pushed out.</p>
+<hr />
 <h2 id="whitelist"><code>whitelist</code></h2>
 <pre><code class="yaml">type: whitelist
 whitelist:

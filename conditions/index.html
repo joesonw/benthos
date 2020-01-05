@@ -137,7 +137,7 @@
 </li>
                                     
 <li >
-    <a href="../batching/">Message Batching</a>
+    <a href="../batching/">Batching</a>
 </li>
                                     
 <li >
@@ -231,36 +231,25 @@
 <p>Conditions are boolean queries that can be executed based on the contents of a
 message. Some <a href="../processors/">processors</a> such as <a href="../processors/#filter"><code>filter</code></a> use
 conditions for expressing their logic.</p>
-<p>Conditions themselves can modify (<code>not</code>) and combine (<code>and</code>, <code>or</code>)
+<p>Conditions themselves can modify (<a href="#not"><code>not</code></a>) and combine (<a href="#and"><code>and</code></a>, <a href="#or"><code>or</code></a>)
 other conditions, and can therefore be used to create complex boolean
 expressions.</p>
 <p>The format of a condition is similar to other Benthos types:</p>
 <pre><code class="yaml">condition:
-  type: text
   text:
     operator: equals
-    part: 0
     arg: hello world
 </code></pre>
 
-<p>And using boolean condition types we can combine multiple conditions together:</p>
-<pre><code class="yaml">condition:
-  and:
-  - text:
-      operator: contains
-      arg: hello world
-  - or:
-    - text:
-        operator: contains
-        arg: foo
-    - not:
+<p>And is usually found as the child of a processor:</p>
+<pre><code class="yaml">pipeline:
+  processors:
+    - filter_parts:
         text:
-          operator: contains
-          arg: bar
+          operator: equals
+          arg: hello world
 </code></pre>
 
-<p>The above example could be summarised as 'text contains "hello world" and also
-either contains "foo" or does <em>not</em> contain "bar"'.</p>
 <h3 id="batching-and-multipart-messages">Batching and Multipart Messages</h3>
 <p>All conditions can be applied to a multipart message, which is synonymous with a
 batch. Some conditions target a specific part of a message batch, and require
@@ -309,20 +298,30 @@ individually. If all messages pass the child condition then this condition also
 passes.</p>
 <p>For example, if we wanted to check that all messages of a batch contain the word
 'foo' we could use this config:</p>
-<pre><code class="yaml">type: all
-all:
-  type: text
+<pre><code class="yaml">all:
   text:
     operator: contains
     arg: foo
 </code></pre>
 
+<hr />
 <h2 id="and"><code>and</code></h2>
 <pre><code class="yaml">type: and
 and: []
 </code></pre>
 
-<p>And is a condition that returns the logical AND of its children conditions.</p>
+<p>And is a condition that returns the logical AND of its children conditions:</p>
+<pre><code class="yaml"># True if message contains both 'foo' and 'bar'
+and:
+  - text:
+      operator: contains
+      arg: foo
+  - text:
+      operator: contains
+      arg: bar
+</code></pre>
+
+<hr />
 <h2 id="any"><code>any</code></h2>
 <pre><code class="yaml">type: any
 any: {}
@@ -339,6 +338,7 @@ the word 'foo' we could use this config:</p>
     arg: foo
 </code></pre>
 
+<hr />
 <h2 id="bounds_check"><code>bounds_check</code></h2>
 <pre><code class="yaml">type: bounds_check
 bounds_check:
@@ -349,6 +349,7 @@ bounds_check:
 </code></pre>
 
 <p>Checks a message against a set of bounds.</p>
+<hr />
 <h2 id="check_field"><code>check_field</code></h2>
 <pre><code class="yaml">type: check_field
 check_field:
@@ -360,6 +361,7 @@ check_field:
 <p>Extracts the value of a field identified via <a href="../field_paths/">dot path</a>
 within messages (currently only JSON format is supported) and then tests the
 extracted value against a child condition.</p>
+<hr />
 <h2 id="check_interpolation"><code>check_interpolation</code></h2>
 <pre><code class="yaml">type: check_interpolation
 check_interpolation:
@@ -379,6 +381,7 @@ the result against a child condition.</p>
       arg: 1
 </code></pre>
 
+<hr />
 <h2 id="count"><code>count</code></h2>
 <pre><code class="yaml">type: count
 count:
@@ -394,6 +397,7 @@ read.</p>
 Parallel processors containing a count condition will therefore count
 independently. It is, however, possible to share the counter across processor
 pipelines by defining the count condition as a resource.</p>
+<hr />
 <h2 id="jmespath"><code>jmespath</code></h2>
 <pre><code class="yaml">type: jmespath
 jmespath:
@@ -422,6 +426,7 @@ the syntax of expressions.</p>
 <p>JMESPath is traditionally used for mutating JSON, in order to do this please
 instead use the <a href="../processors/#jmespath"><code>jmespath</code></a>
 processor.</p>
+<hr />
 <h2 id="json_schema"><code>json_schema</code></h2>
 <pre><code class="yaml">type: json_schema
 json_schema:
@@ -470,6 +475,7 @@ tutorials regarding the syntax of the schema.</p>
 </code></pre>
 
 <p>Then the condition would pass.</p>
+<hr />
 <h2 id="metadata"><code>metadata</code></h2>
 <pre><code class="yaml">type: metadata
 metadata:
@@ -578,6 +584,7 @@ expression (RE2 syntax).</p>
   arg: &quot;1[a-z]2&quot;
 </code></pre>
 
+<hr />
 <h2 id="not"><code>not</code></h2>
 <pre><code class="yaml">type: not
 not: {}
@@ -586,9 +593,7 @@ not: {}
 <p>Not is a condition that returns the opposite (NOT) of its child condition. The
 body of a not object is the child condition, i.e. in order to express 'part 0
 NOT equal to "foo"' you could have the following YAML config:</p>
-<pre><code class="yaml">type: not
-not:
-  type: text
+<pre><code class="yaml">not:
   text:
     operator: equal
     part: 0
@@ -609,6 +614,7 @@ not:
 }
 </code></pre>
 
+<hr />
 <h2 id="number"><code>number</code></h2>
 <pre><code class="yaml">type: number
 number:
@@ -640,12 +646,24 @@ value cannot be parsed as a number.</p>
 <h3 id="less_than_1"><code>less_than</code></h3>
 <p>Checks whether the value is less than the argument. Returns false if the value
 cannot be parsed as a number.</p>
+<hr />
 <h2 id="or"><code>or</code></h2>
 <pre><code class="yaml">type: or
 or: []
 </code></pre>
 
 <p>Or is a condition that returns the logical OR of its children conditions.</p>
+<pre><code class="yaml"># True if message contains 'foo' or 'bar'
+or:
+  - text:
+      operator: contains
+      arg: foo
+  - text:
+      operator: contains
+      arg: bar
+</code></pre>
+
+<hr />
 <h2 id="processor_failed"><code>processor_failed</code></h2>
 <pre><code class="yaml">type: processor_failed
 processor_failed:
@@ -655,6 +673,7 @@ processor_failed:
 <p>Returns true if a processing stage of a message has failed. This condition is
 useful for dropping failed messages or creating dead letter queues, you can read
 more about these patterns <a href="../error_handling/">here</a>.</p>
+<hr />
 <h2 id="resource"><code>resource</code></h2>
 <pre><code class="yaml">type: resource
 resource: &quot;&quot;
@@ -691,12 +710,14 @@ resources:
         arg: filter me please
 </code></pre>
 
+<hr />
 <h2 id="static"><code>static</code></h2>
 <pre><code class="yaml">type: static
 static: true
 </code></pre>
 
 <p>Static is a condition that always resolves to the same static boolean value.</p>
+<hr />
 <h2 id="text"><code>text</code></h2>
 <pre><code class="yaml">type: text
 text:
@@ -760,14 +781,23 @@ syntax).</p>
   - bar
 </code></pre>
 
+<hr />
 <h2 id="xor"><code>xor</code></h2>
 <pre><code class="yaml">type: xor
 xor: []
 </code></pre>
 
-<p>Xor is a condition that returns the logical XOR of its children conditions,
-meaning it only resolves to true if <em>exactly</em> one of its children conditions
-resolves to true.</p></div>
+<p>Returns the logical XOR of its children conditions, meaning it only resolves to
+true if <em>exactly</em> one of its children conditions resolves to true.</p>
+<pre><code class="yaml"># True if message contains 'foo' or 'bar', but not both
+xor:
+  - text:
+      operator: contains
+      arg: foo
+  - text:
+      operator: contains
+      arg: bar
+</code></pre></div>
         </div>
 
         <footer class="col-md-12">
