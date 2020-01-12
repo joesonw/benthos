@@ -15,7 +15,7 @@ import (
 func init() {
 	Constructors[TypeMemory] = TypeSpec{
 		constructor: NewMemory,
-		description: `
+		Description: `
 The memory buffer stores messages in RAM. During shutdown Benthos will make a
 best attempt at flushing all remaining messages before exiting cleanly.
 

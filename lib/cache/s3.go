@@ -23,7 +23,7 @@ import (
 func init() {
 	Constructors[TypeS3] = TypeSpec{
 		constructor: NewS3,
-		description: `
+		Description: `
 The s3 cache stores each item in an S3 bucket as a file, where an item ID is
 the path of the item within the bucket.
 

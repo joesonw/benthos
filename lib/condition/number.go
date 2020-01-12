@@ -15,7 +15,7 @@ import (
 func init() {
 	Constructors[TypeNumber] = TypeSpec{
 		constructor: NewNumber,
-		description: `
+		Description: `
 Number is a condition that checks the contents of a message parsed as a 64-bit
 floating point number against a logical operator and an argument.
 

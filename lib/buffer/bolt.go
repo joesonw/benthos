@@ -13,7 +13,7 @@ import (
 func init() {
 	Constructors[TypeBolt] = TypeSpec{
 		constructor: NewBolt,
-		description: `
+		Description: `
 EXPERIMENTAL: This buffer is considered experimental and subject to change
 outside of major version releases.
 

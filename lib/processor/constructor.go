@@ -11,6 +11,7 @@ import (
 	"github.com/Jeffail/benthos/v3/lib/metrics"
 	"github.com/Jeffail/benthos/v3/lib/types"
 	"github.com/Jeffail/benthos/v3/lib/util/config"
+	"github.com/Jeffail/benthos/v3/lib/x/docs"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -30,6 +31,7 @@ type TypeSpec struct {
 
 	// Deprecated indicates whether this component is deprecated.
 	Deprecated bool
+	FieldSpecs docs.FieldSpecs
 }
 
 // Constructors is a map of all processor types with their specs.

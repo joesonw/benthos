@@ -15,7 +15,7 @@ import (
 func init() {
 	Constructors[TypeRename] = TypeSpec{
 		constructor: NewRename,
-		description: `
+		Description: `
 Rename metric paths as they are registered.
 
 Metrics must be matched using dot notation even if the chosen output uses a

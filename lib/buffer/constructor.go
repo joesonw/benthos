@@ -11,6 +11,7 @@ import (
 	"github.com/Jeffail/benthos/v3/lib/metrics"
 	"github.com/Jeffail/benthos/v3/lib/types"
 	"github.com/Jeffail/benthos/v3/lib/util/config"
+	"github.com/Jeffail/benthos/v3/lib/x/docs"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -19,8 +20,10 @@ import (
 // TypeSpec is a constructor and usage description for each buffer type.
 type TypeSpec struct {
 	constructor        func(conf Config, mgr types.Manager, log log.Modular, stats metrics.Type) (Type, error)
-	description        string
 	sanitiseConfigFunc func(conf Config) (interface{}, error)
+
+	Description string
+	FieldSpecs  docs.FieldSpecs
 }
 
 // Constructors is a map of all buffer types with their specs.
@@ -201,7 +204,7 @@ func Descriptions() string {
 			buf.Write(confBytes)
 			buf.WriteString("```\n")
 		}
-		buf.WriteString(Constructors[name].description)
+		buf.WriteString(Constructors[name].Description)
 		buf.WriteString("\n")
 		if i != (len(names) - 1) {
 			buf.WriteString("\n---\n")

@@ -5,7 +5,7 @@ package metrics
 func init() {
 	Constructors[TypePrometheus] = TypeSpec{
 		constructor: NewPrometheus,
-		description: `
+		Description: `
 Host endpoints (` + "`/metrics` and `/stats`" + `) for Prometheus scraping.
 Metrics paths will differ from [the list](paths.md) in that dot separators will
 instead be underscores.

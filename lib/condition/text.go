@@ -19,7 +19,7 @@ import (
 func init() {
 	Constructors[TypeText] = TypeSpec{
 		constructor: NewText,
-		description: `
+		Description: `
 Text is a condition that checks the contents of a message as plain text against
 a logical operator and an argument.
 

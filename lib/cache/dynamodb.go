@@ -24,7 +24,7 @@ import (
 func init() {
 	Constructors[TypeDynamoDB] = TypeSpec{
 		constructor: NewDynamoDB,
-		description: `
+		Description: `
 The dynamodb cache stores key/value pairs as a single document in a DynamoDB
 table. The key is stored as a string value and used as the table hash key. The
 value is stored as a binary value using the ` + "`data_key`" + ` field name.

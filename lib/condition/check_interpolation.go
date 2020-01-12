@@ -16,7 +16,7 @@ import (
 func init() {
 	Constructors[TypeCheckInterpolation] = TypeSpec{
 		constructor: NewCheckInterpolation,
-		description: `
+		Description: `
 Resolves a string containing
 [function interpolations](../config_interpolation.md#functions) and then tests
 the result against a child condition.

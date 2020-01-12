@@ -16,7 +16,7 @@ import (
 func init() {
 	Constructors[TypeCheckField] = TypeSpec{
 		constructor: NewCheckField,
-		description: `
+		Description: `
 Extracts the value of a field identified via [dot path](../field_paths.md)
 within messages (currently only JSON format is supported) and then tests the
 extracted value against a child condition.`,
