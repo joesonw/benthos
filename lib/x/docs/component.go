@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"text/template"
 
 	"github.com/Jeffail/benthos/v3/lib/util/config"
-	"github.com/Jeffail/gabs/v2"
 )
 
 // ComponentSpec describes a Benthos component.
@@ -24,52 +24,127 @@ type ComponentSpec struct {
 	Fields FieldSpecs
 }
 
+type fieldContext struct {
+	Name        string
+	Type        string
+	Description string
+	Advanced    bool
+	Deprecated  bool
+	Examples    []string
+}
+
+type componentContext struct {
+	Name           string
+	Type           string
+	Description    string
+	Fields         []fieldContext
+	CommonConfig   string
+	AdvancedConfig string
+}
+
+var componentTemplate = `---
+title: {{.Name}}
+type: {{.Type}}
+---
+
+{{if eq .CommonConfig .AdvancedConfig -}}
+` + "```yaml" + `
+{{.CommonConfig -}}
+` + "```" + `
+{{else}}
+import Tabs from '@theme/Tabs';
+
+<Tabs defaultValue="common" values={{"{"}}[
+  { label: 'Common', value: 'common', },
+  { label: 'Advanced', value: 'advanced', },
+]{{"}"}}>
+
+import TabItem from '@theme/TabItem';
+
+<TabItem value="common">
+
+` + "```yaml" + `
+{{.CommonConfig -}}
+` + "```" + `
+
+</TabItem>
+<TabItem value="advanced">
+
+` + "```yaml" + `
+{{.AdvancedConfig -}}
+` + "```" + `
+
+</TabItem>
+</Tabs>
+{{end}}
+{{.Description}}
+
+{{if gt (len .Fields) 0 -}}
+## Fields
+
+{{end -}}
+{{range $i, $field := .Fields -}}
+### ` + "`{{$field.Name}}`" + `
+
+{{if $field.Advanced}}(Advanced){{end}}
+Type: ` + "`{{$field.Type}}`" + `
+
+{{if gt (len $field.Description) 0 -}}
+{{$field.Description}}
+{{else -}}
+Sorry! This field is currently undocumented.
+{{end}}
+---
+{{end -}}
+`
+
 // AsMarkdown renders the spec of a component, along with a full configuration
 // example, into a markdown document.
 func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("---\ntitle: %v\n---\n\n", c.Name))
-	buf.WriteString("# `" + c.Name + "`")
-	buf.WriteString("\n\n")
+	ctx := componentContext{
+		Name:        c.Name,
+		Type:        c.Type,
+		Description: c.Description,
+	}
 
 	var advancedConfigBytes []byte
+	var commonConfigBytes []byte
 	var advancedConfig map[string]interface{}
 	var err error
 
 	if asMap, isMap := fullConfigExample.(map[string]interface{}); isMap {
 		advancedConfig = c.Fields.ConfigAdvanced(asMap)
-		if advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
 			c.Type: map[string]interface{}{
 				c.Name: advancedConfig,
 			},
-		}); err != nil {
-			return nil, err
+		})
+		commonConfig := c.Fields.ConfigCommon(asMap)
+		if err == nil {
+			commonConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+				c.Type: map[string]interface{}{
+					c.Name: commonConfig,
+				},
+			})
 		}
 	} else {
-		if advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
 			c.Type: map[string]interface{}{
 				c.Name: fullConfigExample,
 			},
-		}); err != nil {
-			return nil, err
-		}
+		})
+		commonConfigBytes = advancedConfigBytes
 	}
-	buf.WriteString("```yaml\n")
-	buf.Write(advancedConfigBytes)
-	buf.WriteString("```")
-	buf.WriteString("\n\n")
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.CommonConfig = string(commonConfigBytes)
+	ctx.AdvancedConfig = string(advancedConfigBytes)
 
 	if c.Description[0] == '\n' {
-		c.Description = c.Description[1:]
+		ctx.Description = c.Description[1:]
 	}
-	buf.WriteString(c.Description)
-	buf.WriteString("\n\n")
-	if advancedConfig == nil {
-		return buf.Bytes(), nil
-	}
-
-	buf.WriteString("### Fields")
-	buf.WriteString("\n\n")
 
 	fieldNames := []string{}
 	unrecognisedSpecs := []string{}
@@ -93,12 +168,10 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 	sort.Strings(fieldNames)
 
 	for _, k := range fieldNames {
-		v, hasSpec := c.Fields[k]
+		v := c.Fields[k]
 		if v.Deprecated {
 			continue
 		}
-		buf.WriteString("### `" + k + "`")
-		buf.WriteString("\n\n")
 
 		fieldType := reflect.TypeOf(advancedConfig[k]).Kind().String()
 		switch fieldType {
@@ -107,19 +180,17 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 		case "slice":
 			fieldType = "array"
 		}
-		buf.WriteString(fmt.Sprintf("Type: `%v`\n\n", fieldType))
-		if !hasSpec {
-			continue
-		}
-		buf.WriteString(v.Description)
-		buf.WriteString("\n\n")
-		if len(v.Examples) > 0 {
-			buf.WriteString("Examples:\n\n")
-			for _, e := range v.Examples {
-				buf.WriteString("- `" + gabs.Wrap(e).String() + "`")
-			}
-		}
+
+		ctx.Fields = append(ctx.Fields, fieldContext{
+			Name:        k,
+			Type:        fieldType,
+			Description: v.Description,
+			Advanced:    v.Advanced,
+		})
 	}
 
-	return buf.Bytes(), nil
+	var buf bytes.Buffer
+	err = template.Must(template.New("component").Parse(componentTemplate)).Execute(&buf, ctx)
+
+	return buf.Bytes(), err
 }

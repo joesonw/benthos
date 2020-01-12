@@ -41,7 +41,7 @@ func render(dir string, confSanit interface{}, spec docs.ComponentSpec) {
 }
 
 func main() {
-	docsDir := "./website/docs"
+	docsDir := "./website/docs/components"
 	flag.StringVar(&docsDir, "dir", docsDir, "The directory to write docs to")
 	flag.Parse()
 
