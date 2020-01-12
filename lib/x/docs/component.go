@@ -42,6 +42,12 @@ type componentContext struct {
 	AdvancedConfig string
 }
 
+/*
+{{if $field.Advanced}}(Advanced){{end}}
+
+Type: ` + "`{{$field.Type}}`" + `
+*/
+
 var componentTemplate = `---
 title: {{.Name}}
 type: {{.Type}}
@@ -86,15 +92,18 @@ import TabItem from '@theme/TabItem';
 {{range $i, $field := .Fields -}}
 ### ` + "`{{$field.Name}}`" + `
 
-{{if $field.Advanced}}(Advanced){{end}}
-Type: ` + "`{{$field.Type}}`" + `
-
 {{if gt (len $field.Description) 0 -}}
 {{$field.Description}}
 {{else -}}
 Sorry! This field is currently undocumented.
 {{end}}
----
+{{if gt (len $field.Examples) 0 -}}
+` + "```yaml" + `
+{{range $j, $example := $field.Examples -}}
+{{$example}}
+{{end -}}
+` + "```" + `
+{{end -}}
 {{end -}}
 `
 
@@ -115,23 +124,17 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 	if asMap, isMap := fullConfigExample.(map[string]interface{}); isMap {
 		advancedConfig = c.Fields.ConfigAdvanced(asMap)
 		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-			c.Type: map[string]interface{}{
-				c.Name: advancedConfig,
-			},
+			c.Name: advancedConfig,
 		})
 		commonConfig := c.Fields.ConfigCommon(asMap)
 		if err == nil {
 			commonConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-				c.Type: map[string]interface{}{
-					c.Name: commonConfig,
-				},
+				c.Name: commonConfig,
 			})
 		}
 	} else {
 		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-			c.Type: map[string]interface{}{
-				c.Name: fullConfigExample,
-			},
+			c.Name: fullConfigExample,
 		})
 		commonConfigBytes = advancedConfigBytes
 	}
@@ -181,12 +184,30 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 			fieldType = "array"
 		}
 
-		ctx.Fields = append(ctx.Fields, fieldContext{
+		var examples []string
+		for _, example := range v.Examples {
+			exampleBytes, err := config.MarshalYAML(map[string]interface{}{
+				k: example,
+			})
+			if err != nil {
+				return nil, err
+			}
+			examples = append(examples, string(exampleBytes))
+		}
+
+		fieldCtx := fieldContext{
 			Name:        k,
 			Type:        fieldType,
 			Description: v.Description,
 			Advanced:    v.Advanced,
-		})
+			Examples:    examples,
+		}
+
+		if len(fieldCtx.Description) > 0 && fieldCtx.Description[0] == '\n' {
+			fieldCtx.Description = fieldCtx.Description[1:]
+		}
+
+		ctx.Fields = append(ctx.Fields, fieldCtx)
 	}
 
 	var buf bytes.Buffer

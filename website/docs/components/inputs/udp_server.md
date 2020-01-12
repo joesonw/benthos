@@ -1,0 +1,34 @@
+---
+title: udp_server
+type: input
+---
+
+```yaml
+udp_server:
+  address: 127.0.0.1:0
+  delimiter: ""
+  max_buffer: 1e+06
+```
+
+Creates a server that receives messages over UDP as a continuous stream of data.
+Each line is interpretted as an individual message, if the delimiter field is
+left empty then line feed (\n) is used.
+
+The field `max_buffer` specifies the maximum amount of memory to
+allocate for buffering lines of data, this must exceed the largest expected
+message size.
+
+## Fields
+
+### `address`
+
+Sorry! This field is currently undocumented.
+
+### `delimiter`
+
+Sorry! This field is currently undocumented.
+
+### `max_buffer`
+
+Sorry! This field is currently undocumented.
+
