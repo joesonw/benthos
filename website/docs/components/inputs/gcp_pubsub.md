@@ -23,23 +23,19 @@ This input adds the following metadata fields to each message:
 ```
 
 You can access these metadata fields using
-[function interpolation](../config_interpolation.md#metadata).
+[function interpolation](/docs/configuration/interpolation#metadata).
 
 ## Fields
 
-### `max_outstanding_bytes`
-
-Sorry! This field is currently undocumented.
-
-### `max_outstanding_messages`
-
-Sorry! This field is currently undocumented.
-
 ### `project`
 
-Sorry! This field is currently undocumented.
-
+`string` The project ID of the target subscription.
 ### `subscription`
 
-Sorry! This field is currently undocumented.
+`string` The target subscription ID.
+### `max_outstanding_messages`
 
+`number` The maximum number of outstanding pending messages to be consumed at a given time.
+### `max_outstanding_bytes`
+
+`number` The maximum number of outstanding pending messages to be consumed measured in bytes.

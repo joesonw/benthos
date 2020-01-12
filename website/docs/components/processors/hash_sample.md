@@ -21,17 +21,3 @@ to `50.0` and `retain_max` to `100.1` will drop the _other_ half.
 In order to sample individual messages of a batch use this processor with the
 [`for_each`](#for_each) processor.
 
-## Fields
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `retain_max`
-
-Sorry! This field is currently undocumented.
-
-### `retain_min`
-
-Sorry! This field is currently undocumented.
-

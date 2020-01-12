@@ -38,17 +38,3 @@ to allow none of the latency based metrics with the pattern
 In order to see logs breaking down which metrics are registered and whether they
 are blocked by your blacklists enable logging at the TRACE level.
 
-## Fields
-
-### `child`
-
-Sorry! This field is currently undocumented.
-
-### `paths`
-
-Sorry! This field is currently undocumented.
-
-### `patterns`
-
-Sorry! This field is currently undocumented.
-

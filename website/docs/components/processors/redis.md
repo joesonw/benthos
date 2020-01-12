@@ -46,29 +46,3 @@ Returns the cardinality of a set, or 0 if the key does not exist.
 
 Adds a new member to a set. Returns `1` if the member was added.
 
-## Fields
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `retries`
-
-Sorry! This field is currently undocumented.
-
-### `retry_period`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

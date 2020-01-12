@@ -21,33 +21,3 @@ The `topic` field can be dynamically set using function interpolations
 described [here](../config_interpolation.md#functions). When sending batched
 messages these interpolations are performed per message part.
 
-## Fields
-
-### `client_id`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `password`
-
-Sorry! This field is currently undocumented.
-
-### `qos`
-
-Sorry! This field is currently undocumented.
-
-### `topic`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-
-### `user`
-
-Sorry! This field is currently undocumented.
-

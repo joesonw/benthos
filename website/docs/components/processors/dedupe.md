@@ -58,25 +58,3 @@ problem by using a memory based cache. This is a compromise that can achieve
 effective deduplication but parallel deployments of the pipeline as well as
 service restarts increase the chances of duplicates passing undetected.
 
-## Fields
-
-### `cache`
-
-Sorry! This field is currently undocumented.
-
-### `drop_on_err`
-
-Sorry! This field is currently undocumented.
-
-### `hash`
-
-Sorry! This field is currently undocumented.
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

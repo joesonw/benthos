@@ -16,21 +16,3 @@ using function interpolations described
 [here](../config_interpolation.md#functions). When sending batched messages
 these interpolations are performed per message part.
 
-## Fields
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `nsqd_tcp_address`
-
-Sorry! This field is currently undocumented.
-
-### `topic`
-
-Sorry! This field is currently undocumented.
-
-### `user_agent`
-
-Sorry! This field is currently undocumented.
-

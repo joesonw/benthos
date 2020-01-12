@@ -19,21 +19,3 @@ please check out [this document](../batching.md).
 
 This processor is scheduled to be removed in Benthos V4
 
-## Fields
-
-### `byte_size`
-
-Sorry! This field is currently undocumented.
-
-### `condition`
-
-Sorry! This field is currently undocumented.
-
-### `count`
-
-Sorry! This field is currently undocumented.
-
-### `period`
-
-Sorry! This field is currently undocumented.
-

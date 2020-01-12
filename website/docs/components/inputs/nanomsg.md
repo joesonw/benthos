@@ -19,29 +19,3 @@ be compatible with any implementation, but specifically targets Nanomsg.
 
 Currently only PULL and SUB sockets are supported.
 
-## Fields
-
-### `bind`
-
-Sorry! This field is currently undocumented.
-
-### `poll_timeout`
-
-Sorry! This field is currently undocumented.
-
-### `reply_timeout`
-
-Sorry! This field is currently undocumented.
-
-### `socket_type`
-
-Sorry! This field is currently undocumented.
-
-### `sub_filters`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-

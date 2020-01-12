@@ -43,17 +43,3 @@ value cannot be parsed as a number.
 Checks whether the value is less than the argument. Returns false if the value
 cannot be parsed as a number.
 
-## Fields
-
-### `arg`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `part`
-
-Sorry! This field is currently undocumented.
-

@@ -84,21 +84,3 @@ case the `labels` field can be used in order to create them. Label
 values can also be set using function interpolations in order to dynamically
 populate them with context about the message.
 
-## Fields
-
-### `labels`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-
-### `type`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

@@ -80,33 +80,3 @@ processing they will be correctly aligned with the original batch. However, the
 ordering of premapped message parts as they are sent through processors are not
 guaranteed to match the ordering of the original batch.
 
-## Fields
-
-### `conditions`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `postmap`
-
-Sorry! This field is currently undocumented.
-
-### `postmap_optional`
-
-Sorry! This field is currently undocumented.
-
-### `premap`
-
-Sorry! This field is currently undocumented.
-
-### `premap_optional`
-
-Sorry! This field is currently undocumented.
-
-### `processors`
-
-Sorry! This field is currently undocumented.
-

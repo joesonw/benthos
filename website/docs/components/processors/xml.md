@@ -60,13 +60,3 @@ The resulting JSON structure would look like this:
 }
 ```
 
-## Fields
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

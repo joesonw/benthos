@@ -31,17 +31,3 @@ down until the condition is met then set `restart_input` to `true`.
 A metadata key `benthos_read_until` containing the value `final` is
 added to the first part of the message that triggers to input to stop.
 
-## Fields
-
-### `condition`
-
-Sorry! This field is currently undocumented.
-
-### `input`
-
-Sorry! This field is currently undocumented.
-
-### `restart_input`
-
-Sorry! This field is currently undocumented.
-

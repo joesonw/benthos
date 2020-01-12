@@ -29,21 +29,3 @@ This input adds the following metadata fields to each message:
 You can access these metadata fields using
 [function interpolation](../config_interpolation.md#metadata).
 
-## Fields
-
-### `prefetch_count`
-
-Sorry! This field is currently undocumented.
-
-### `queue`
-
-Sorry! This field is currently undocumented.
-
-### `subject`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-

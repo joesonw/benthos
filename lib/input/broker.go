@@ -12,6 +12,7 @@ import (
 	"github.com/Jeffail/benthos/v3/lib/message/batch"
 	"github.com/Jeffail/benthos/v3/lib/metrics"
 	"github.com/Jeffail/benthos/v3/lib/types"
+	"github.com/Jeffail/benthos/v3/lib/x/docs"
 	"gopkg.in/yaml.v3"
 )
 
@@ -67,18 +68,18 @@ set to '2', you would end up with two 'foo' inputs and two 'bar' inputs.
 
 ### Batching
 
-It's possible to configure a [batch policy](../batching.md#batch-policy) with a
-broker using the ` + "`batching`" + ` fields. When doing this the feeds from all
-child inputs are combined. Some inputs do not support broker based batching and
-specify this in their documentation.
+It's possible to configure a [batch policy](/docs/configuration/batching#batch-policy)
+with a broker using the ` + "`batching`" + ` fields. When doing this the feeds
+from all child inputs are combined. Some inputs do not support broker based
+batching and specify this in their documentation.
 
 ### Processors
 
-It is possible to configure [processors](../processors/README.md) at the broker
-level, where they will be applied to _all_ child inputs, as well as on the
-individual child inputs. If you have processors at both the broker level _and_
-on child inputs then the broker processors will be applied _after_ the child
-nodes processors.`,
+It is possible to configure [processors](/docs/components/processors/about) at
+the broker level, where they will be applied to _all_ child inputs, as well as
+on the individual child inputs. If you have processors at both the broker level
+_and_ on child inputs then the broker processors will be applied _after_ the
+child nodes processors.`,
 		sanitiseConfigFunc: func(conf Config) (interface{}, error) {
 			var err error
 			inSlice := []interface{}{}
@@ -98,6 +99,11 @@ nodes processors.`,
 				"inputs":   inSlice,
 				"batching": batchSanit,
 			}, nil
+		},
+		FieldSpecs: docs.FieldSpecs{
+			docs.FieldCommon("copies", "Whatever is specified within `inputs` will be created this many times."),
+			docs.FieldCommon("inputs", "A list of inputs to create."),
+			batch.FieldSpec(),
 		},
 	}
 }

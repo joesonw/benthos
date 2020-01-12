@@ -34,13 +34,3 @@ This is a more powerful way of batching messages than the
 [`batch`](../processors/README.md#batch) processor, as it does not
 rely on new messages entering the pipeline in order to trigger the conditions.
 
-## Fields
-
-### `batch_policy`
-
-Sorry! This field is currently undocumented.
-
-### `limit`
-
-Sorry! This field is currently undocumented.
-

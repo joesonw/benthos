@@ -24,21 +24,3 @@ The field `max_buffer` specifies the maximum amount of memory to
 allocate _per connection_ for buffering lines of data. If a line of data from a
 connection exceeds this value then the connection will be closed.
 
-## Fields
-
-### `address`
-
-Sorry! This field is currently undocumented.
-
-### `delimiter`
-
-Sorry! This field is currently undocumented.
-
-### `max_buffer`
-
-Sorry! This field is currently undocumented.
-
-### `multipart`
-
-Sorry! This field is currently undocumented.
-

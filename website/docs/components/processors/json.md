@@ -135,21 +135,3 @@ Splits a string field by a value and replaces the original string with an array
 containing the results of the split. This operator requires both the path value
 and the contents of the `value` field to be strings.
 
-## Fields
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

@@ -37,13 +37,3 @@ JMESPath is traditionally used for mutating JSON, in order to do this please
 instead use the [`jmespath`](../processors/README.md#jmespath)
 processor.
 
-## Fields
-
-### `part`
-
-Sorry! This field is currently undocumented.
-
-### `query`
-
-Sorry! This field is currently undocumented.
-

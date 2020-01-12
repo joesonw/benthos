@@ -38,21 +38,3 @@ If a message contains line breaks each line of the message is piped to the
 subprocess and flushed, and a response is expected from the subprocess before
 another line is fed in.
 
-## Fields
-
-### `args`
-
-Sorry! This field is currently undocumented.
-
-### `max_buffer`
-
-Sorry! This field is currently undocumented.
-
-### `name`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

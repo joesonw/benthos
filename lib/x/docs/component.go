@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-	"sort"
 	"text/template"
 
 	"github.com/Jeffail/benthos/v3/lib/util/config"
+	"github.com/Jeffail/gabs/v2"
 )
 
 // ComponentSpec describes a Benthos component.
@@ -92,13 +92,11 @@ import TabItem from '@theme/TabItem';
 {{range $i, $field := .Fields -}}
 ### ` + "`{{$field.Name}}`" + `
 
-{{if gt (len $field.Description) 0 -}}
-{{$field.Description}}
-{{else -}}
-Sorry! This field is currently undocumented.
-{{end}}
+` + "`{{$field.Type}}`" + ` {{$field.Description}}
 {{if gt (len $field.Examples) 0 -}}
 ` + "```yaml" + `
+# Examples
+
 {{range $j, $example := $field.Examples -}}
 {{$example}}
 {{end -}}
@@ -106,6 +104,40 @@ Sorry! This field is currently undocumented.
 {{end -}}
 {{end -}}
 `
+
+func (c *ComponentSpec) createConfigs(fullConfigExample interface{}) (
+	advancedConfigBytes, commonConfigBytes []byte,
+	advancedConfig interface{},
+) {
+	var err error
+	if len(c.Fields) > 0 {
+		advancedConfig, err = c.Fields.ConfigAdvanced(fullConfigExample)
+		if err == nil {
+			advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+				c.Name: advancedConfig,
+			})
+		}
+		var commonConfig interface{}
+		if err == nil {
+			commonConfig, err = c.Fields.ConfigCommon(fullConfigExample)
+		}
+		if err == nil {
+			commonConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+				c.Name: commonConfig,
+			})
+		}
+	}
+	if err != nil || len(c.Fields) == 0 {
+		if advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
+			c.Name: fullConfigExample,
+		}); err != nil {
+			panic(err)
+		}
+		commonConfigBytes = advancedConfigBytes
+		advancedConfig = fullConfigExample
+	}
+	return
+}
 
 // AsMarkdown renders the spec of a component, along with a full configuration
 // example, into a markdown document.
@@ -116,78 +148,67 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 		Description: c.Description,
 	}
 
-	var advancedConfigBytes []byte
-	var commonConfigBytes []byte
-	var advancedConfig map[string]interface{}
-	var err error
-
-	if asMap, isMap := fullConfigExample.(map[string]interface{}); isMap {
-		advancedConfig = c.Fields.ConfigAdvanced(asMap)
-		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-			c.Name: advancedConfig,
-		})
-		commonConfig := c.Fields.ConfigCommon(asMap)
-		if err == nil {
-			commonConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-				c.Name: commonConfig,
-			})
-		}
-	} else {
-		advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{
-			c.Name: fullConfigExample,
-		})
-		commonConfigBytes = advancedConfigBytes
-	}
-	if err != nil {
-		return nil, err
-	}
-
+	advancedConfigBytes, commonConfigBytes, advancedConfig := c.createConfigs(fullConfigExample)
 	ctx.CommonConfig = string(commonConfigBytes)
 	ctx.AdvancedConfig = string(advancedConfigBytes)
+
+	gConf := gabs.Wrap(advancedConfig)
 
 	if c.Description[0] == '\n' {
 		ctx.Description = c.Description[1:]
 	}
 
-	fieldNames := []string{}
-	unrecognisedSpecs := []string{}
-	for k, spec := range c.Fields {
-		if spec.Deprecated {
-			continue
-		}
-		fieldNames = append(fieldNames, k)
-		if _, exists := advancedConfig[k]; !exists {
-			unrecognisedSpecs = append(unrecognisedSpecs, k)
-		}
-	}
-	if len(unrecognisedSpecs) > 0 {
-		return nil, fmt.Errorf("unrecognised fields found within '%v' spec: %v", c.Name, unrecognisedSpecs)
-	}
-	for k := range advancedConfig {
-		if _, exists := c.Fields[k]; !exists {
-			fieldNames = append(fieldNames, k)
+	flattenedFields := FieldSpecs{}
+	var walkFields func(root string, f FieldSpecs)
+	walkFields = func(root string, f FieldSpecs) {
+		for _, v := range f {
+			newV := v
+			newV.Children = nil
+			if len(root) > 0 {
+				newV.Name = root + newV.Name
+			}
+			flattenedFields = append(flattenedFields, newV)
+			if len(v.Children) > 0 {
+				walkFields(v.Name+".", v.Children)
+			}
 		}
 	}
-	sort.Strings(fieldNames)
+	walkFields("", c.Fields)
 
-	for _, k := range fieldNames {
-		v := c.Fields[k]
+	for _, v := range flattenedFields {
 		if v.Deprecated {
 			continue
 		}
 
-		fieldType := reflect.TypeOf(advancedConfig[k]).Kind().String()
+		if !gConf.ExistsP(v.Name) {
+			return nil, fmt.Errorf("unrecognised field '%v'", v.Name)
+		}
+
+		fieldType := v.Type
+		if len(fieldType) == 0 {
+			if len(v.Examples) > 0 {
+				fieldType = reflect.TypeOf(v.Examples[0]).Kind().String()
+			} else {
+				if c := gConf.Path(v.Name).Data(); c != nil {
+					fieldType = reflect.TypeOf(c).Kind().String()
+				} else {
+					return nil, fmt.Errorf("unable to infer type of '%v'", v.Name)
+				}
+			}
+		}
 		switch fieldType {
 		case "map":
 			fieldType = "object"
 		case "slice":
 			fieldType = "array"
+		case "float64", "int", "int64":
+			fieldType = "number"
 		}
 
 		var examples []string
 		for _, example := range v.Examples {
 			exampleBytes, err := config.MarshalYAML(map[string]interface{}{
-				k: example,
+				v.Name: example,
 			})
 			if err != nil {
 				return nil, err
@@ -196,14 +217,18 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 		}
 
 		fieldCtx := fieldContext{
-			Name:        k,
+			Name:        v.Name,
 			Type:        fieldType,
 			Description: v.Description,
 			Advanced:    v.Advanced,
 			Examples:    examples,
 		}
 
-		if len(fieldCtx.Description) > 0 && fieldCtx.Description[0] == '\n' {
+		if len(fieldCtx.Description) == 0 {
+			fieldCtx.Description = "Sorry! This field is missing documentation."
+		}
+
+		if fieldCtx.Description[0] == '\n' {
 			fieldCtx.Description = fieldCtx.Description[1:]
 		}
 
@@ -211,7 +236,7 @@ func (c *ComponentSpec) AsMarkdown(fullConfigExample interface{}) ([]byte, error
 	}
 
 	var buf bytes.Buffer
-	err = template.Must(template.New("component").Parse(componentTemplate)).Execute(&buf, ctx)
+	err := template.Must(template.New("component").Parse(componentTemplate)).Execute(&buf, ctx)
 
 	return buf.Bytes(), err
 }

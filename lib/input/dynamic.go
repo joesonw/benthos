@@ -12,6 +12,7 @@ import (
 	"github.com/Jeffail/benthos/v3/lib/log"
 	"github.com/Jeffail/benthos/v3/lib/metrics"
 	"github.com/Jeffail/benthos/v3/lib/types"
+	"github.com/Jeffail/benthos/v3/lib/x/docs"
 	"gopkg.in/yaml.v3"
 )
 
@@ -47,6 +48,11 @@ already exists it will be changed.`,
 				"prefix":  conf.Dynamic.Prefix,
 				"timeout": conf.Dynamic.Timeout,
 			}, nil
+		},
+		FieldSpecs: docs.FieldSpecs{
+			docs.FieldCommon("inputs", "A map of inputs to statically create."),
+			docs.FieldCommon("prefix", "A path prefix for HTTP endpoints that are registered."),
+			docs.FieldCommon("timeout", "The server side timeout of HTTP requests."),
 		},
 	}
 }

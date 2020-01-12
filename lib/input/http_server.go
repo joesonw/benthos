@@ -42,7 +42,7 @@ You can leave the 'address' config field blank in order to use the instance wide
 HTTP server.
 
 The field ` + "`rate_limit`" + ` allows you to specify an optional
-` + "[`rate_limit` resource](../rate_limits/README.md)" + `, which will be
+` + "[`rate_limit` resource](/docs/components/rate_limits/about)" + `, which will be
 applied to each HTTP request made and each websocket payload received.
 
 When the rate limit is breached HTTP requests will have a 429 response returned
@@ -52,9 +52,9 @@ response payload will be sent as per ` + "`ws_rate_limit_message`" + `.
 ### Responses
 
 It's possible to return a response for each message received using
-[synchronous responses](../sync_responses.md). When doing so you can customise
+[synchronous responses](/docs/guides/sync_responses). When doing so you can customise
 headers with the ` + "`sync_response` field `headers`" + `, which can also use
-[function interpolation](../config_interpolation.md#metadata) in the value based
+[function interpolation](/docs/configuration/interpolation#metadata) in the value based
 on the response message contents.
 
 ### Endpoints
@@ -95,7 +95,7 @@ This input adds the following metadata fields to each message:
 ` + "```" + `
 
 You can access these metadata fields using
-[function interpolation](../config_interpolation.md#metadata).`,
+[function interpolation](/docs/configuration/interpolation#metadata).`,
 	}
 }
 

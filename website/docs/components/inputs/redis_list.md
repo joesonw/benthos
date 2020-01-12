@@ -12,17 +12,3 @@ redis_list:
 
 Pops messages from the beginning of a Redis list using the BLPop command.
 
-## Fields
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `timeout`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

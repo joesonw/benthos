@@ -125,21 +125,3 @@ Removes all leading and trailing whitespace from the payload.
 
 Unquotes a single, double, or back-quoted string literal
 
-## Fields
-
-### `arg`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

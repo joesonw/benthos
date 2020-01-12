@@ -16,25 +16,3 @@ memcached:
 Connects to a cluster of memcached services, a prefix can be specified to allow
 multiple cache types to share a memcached cluster under different namespaces.
 
-## Fields
-
-### `addresses`
-
-Sorry! This field is currently undocumented.
-
-### `prefix`
-
-Sorry! This field is currently undocumented.
-
-### `retries`
-
-Sorry! This field is currently undocumented.
-
-### `retry_period`
-
-Sorry! This field is currently undocumented.
-
-### `ttl`
-
-Sorry! This field is currently undocumented.
-

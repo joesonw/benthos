@@ -48,33 +48,3 @@ This input adds the following metadata fields to each message:
 You can access these metadata fields using
 [function interpolation](../config_interpolation.md#metadata).
 
-## Fields
-
-### `credentials`
-
-Sorry! This field is currently undocumented.
-
-### `delete_message`
-
-Sorry! This field is currently undocumented.
-
-### `endpoint`
-
-Sorry! This field is currently undocumented.
-
-### `max_number_of_messages`
-
-Sorry! This field is currently undocumented.
-
-### `region`
-
-Sorry! This field is currently undocumented.
-
-### `timeout`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

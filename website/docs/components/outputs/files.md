@@ -16,9 +16,3 @@ using function interpolations on the `path` field as described
 [here](../config_interpolation.md#functions). When sending batched messages
 these interpolations are performed per message part.
 
-## Fields
-
-### `path`
-
-Sorry! This field is currently undocumented.
-

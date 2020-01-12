@@ -11,27 +11,22 @@ file:
   path: ""
 ```
 
-The file type reads input from a file. If multipart is set to false each line
-is read as a separate message. If multipart is set to true each line is read as
-a message part, and an empty line indicates the end of a message.
-
-If the delimiter field is left empty then line feed (\n) is used.
+Reads a file, where each line is processed as an individual message.
 
 ## Fields
 
-### `delimiter`
-
-Sorry! This field is currently undocumented.
-
-### `max_buffer`
-
-Sorry! This field is currently undocumented.
-
-### `multipart`
-
-Sorry! This field is currently undocumented.
-
 ### `path`
 
-Sorry! This field is currently undocumented.
+`string` A path pointing to a file on disk.
+### `multipart`
 
+`bool` If set `true` each line is read as a message part, and an empty line
+indicates the end of a message batch, and only then is the batch flushed
+downstream.
+### `max_buffer`
+
+`number` Must be larger than the largest line of the target file.
+### `delimiter`
+
+`string` A string that indicates the end of a message within the target file. If left
+empty then line feed (\n) is used.

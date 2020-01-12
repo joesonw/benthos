@@ -24,13 +24,3 @@ the batch.
 This processor will interpolate functions within the 'content' field, you can
 find a list of functions [here](../config_interpolation.md#functions).
 
-## Fields
-
-### `content`
-
-Sorry! This field is currently undocumented.
-
-### `index`
-
-Sorry! This field is currently undocumented.
-

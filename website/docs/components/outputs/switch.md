@@ -68,13 +68,3 @@ output returns an error the switch output also returns an error by setting
 wrap the switch with a `try` broker, but care must be taken to ensure
 duplicate messages aren't introduced during error conditions.
 
-## Fields
-
-### `outputs`
-
-Sorry! This field is currently undocumented.
-
-### `retry_until_success`
-
-Sorry! This field is currently undocumented.
-

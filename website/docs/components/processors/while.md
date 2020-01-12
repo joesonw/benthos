@@ -33,21 +33,3 @@ the first batch only.
 
 You can find a [full list of conditions here](../conditions).
 
-## Fields
-
-### `at_least_once`
-
-Sorry! This field is currently undocumented.
-
-### `condition`
-
-Sorry! This field is currently undocumented.
-
-### `max_loops`
-
-Sorry! This field is currently undocumented.
-
-### `processors`
-
-Sorry! This field is currently undocumented.
-

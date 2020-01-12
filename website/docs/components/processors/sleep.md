@@ -22,9 +22,3 @@ for_each:
     duration: ${!metadata:sleep_for}
 ```
 
-## Fields
-
-### `duration`
-
-Sorry! This field is currently undocumented.
-

@@ -15,17 +15,3 @@ algorithms are: gzip, zlib, flate.
 
 The 'level' field might not apply to all algorithms.
 
-## Fields
-
-### `algorithm`
-
-Sorry! This field is currently undocumented.
-
-### `level`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

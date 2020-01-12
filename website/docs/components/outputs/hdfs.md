@@ -19,25 +19,3 @@ for each object you should use function interpolations described
 [here](../config_interpolation.md#functions). When sending batched messages the
 interpolations are performed per message part.
 
-## Fields
-
-### `directory`
-
-Sorry! This field is currently undocumented.
-
-### `hosts`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-
-### `user`
-
-Sorry! This field is currently undocumented.
-

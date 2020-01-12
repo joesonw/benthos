@@ -15,9 +15,3 @@ each with a throttle would result in four times the rate specified.
 The period should be specified as a time duration string. For example, '1s'
 would be 1 second, '10ms' would be 10 milliseconds, etc.
 
-## Fields
-
-### `period`
-
-Sorry! This field is currently undocumented.
-

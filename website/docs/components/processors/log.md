@@ -49,17 +49,3 @@ log:
     kafka_topic: "${!metadata:kafka_topic}"
 ```
 
-## Fields
-
-### `fields`
-
-Sorry! This field is currently undocumented.
-
-### `level`
-
-Sorry! This field is currently undocumented.
-
-### `message`
-
-Sorry! This field is currently undocumented.
-

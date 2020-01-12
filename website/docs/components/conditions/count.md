@@ -19,9 +19,3 @@ Parallel processors containing a count condition will therefore count
 independently. It is, however, possible to share the counter across processor
 pipelines by defining the count condition as a resource.
 
-## Fields
-
-### `arg`
-
-Sorry! This field is currently undocumented.
-

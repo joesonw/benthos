@@ -60,25 +60,3 @@ The following is a list of supported drivers and their respective DSN formats:
 Please note that the `postgres` driver enforces SSL by default, you
 can override this with the parameter `sslmode=disable` if required.
 
-## Fields
-
-### `args`
-
-Sorry! This field is currently undocumented.
-
-### `driver`
-
-Sorry! This field is currently undocumented.
-
-### `dsn`
-
-Sorry! This field is currently undocumented.
-
-### `query`
-
-Sorry! This field is currently undocumented.
-
-### `result_codec`
-
-Sorry! This field is currently undocumented.
-

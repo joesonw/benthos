@@ -48,29 +48,3 @@ The order of hash field extraction is as follows:
 
 Where latter stages will overwrite matching field names of a former stage.
 
-## Fields
-
-### `fields`
-
-Sorry! This field is currently undocumented.
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-
-### `walk_json_object`
-
-Sorry! This field is currently undocumented.
-
-### `walk_metadata`
-
-Sorry! This field is currently undocumented.
-

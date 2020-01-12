@@ -26,13 +26,3 @@ the result to an array, which becomes the contents of the resulting message.
 The resulting archived message adopts the metadata of the _first_ message part
 of the batch.
 
-## Fields
-
-### `format`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-

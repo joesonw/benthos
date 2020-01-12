@@ -28,7 +28,7 @@ as metadata fields.`,
 			return sanitiseWithBatch(conf.RedisStreams, conf.RedisStreams.Batching)
 		},
 		FieldSpecs: docs.FieldSpecs{
-			"batching": docs.FieldDeprecated(),
+			docs.FieldDeprecated("batching"),
 		},
 	}
 }

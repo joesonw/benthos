@@ -17,13 +17,3 @@ processed in parallel.
 The field `cap`, if greater than zero, caps the maximum number of
 parallel processing threads.
 
-## Fields
-
-### `cap`
-
-Sorry! This field is currently undocumented.
-
-### `processors`
-
-Sorry! This field is currently undocumented.
-

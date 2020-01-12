@@ -64,7 +64,7 @@ You can access these metadata fields using
 			return sanitiseWithBatch(conf.Kafka, conf.Kafka.Batching)
 		},
 		FieldSpecs: docs.FieldSpecs{
-			"max_batch_count": docs.FieldDeprecated(),
+			docs.FieldDeprecated("max_batch_count"),
 		},
 	}
 }

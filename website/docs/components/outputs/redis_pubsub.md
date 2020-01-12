@@ -16,17 +16,3 @@ guarantee that messages have been received.
 This output will interpolate functions within the channel field, you
 can find a list of functions [here](../config_interpolation.md#functions).
 
-## Fields
-
-### `channel`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

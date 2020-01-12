@@ -25,13 +25,3 @@ process_field:
       algorithm: sha256
 ```
 
-## Fields
-
-### `algorithm`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

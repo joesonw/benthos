@@ -5,6 +5,7 @@ import "github.com/Jeffail/benthos/v3/lib/x/docs"
 // FieldSpec returns a spec for a common batching field.
 func FieldSpec() docs.FieldSpec {
 	return docs.FieldSpec{
+		Name: "batching",
 		Description: `
 Allows you to configure a [batching policy](/docs/configuration/batching).`,
 		Examples: []interface{}{

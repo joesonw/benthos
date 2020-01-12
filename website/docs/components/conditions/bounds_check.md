@@ -13,21 +13,3 @@ bounds_check:
 
 Checks a message against a set of bounds.
 
-## Fields
-
-### `max_part_size`
-
-Sorry! This field is currently undocumented.
-
-### `max_parts`
-
-Sorry! This field is currently undocumented.
-
-### `min_part_size`
-
-Sorry! This field is currently undocumented.
-
-### `min_parts`
-
-Sorry! This field is currently undocumented.
-

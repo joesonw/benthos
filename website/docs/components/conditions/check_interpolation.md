@@ -24,13 +24,3 @@ check_interpolation:
       arg: 1
 ```
 
-## Fields
-
-### `condition`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

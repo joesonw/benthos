@@ -29,17 +29,3 @@ Rather than retrying the same output you may wish to retry the send using a
 different output target (a dead letter queue). In which case you should instead
 use the [`try`](#try) output type.
 
-## Fields
-
-### `backoff`
-
-Sorry! This field is currently undocumented.
-
-### `max_retries`
-
-Sorry! This field is currently undocumented.
-
-### `output`
-
-Sorry! This field is currently undocumented.
-

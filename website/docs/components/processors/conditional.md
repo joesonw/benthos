@@ -26,17 +26,3 @@ processor with the [`for_each`](#for_each) processor.
 
 You can find a [full list of conditions here](../conditions).
 
-## Fields
-
-### `condition`
-
-Sorry! This field is currently undocumented.
-
-### `else_processors`
-
-Sorry! This field is currently undocumented.
-
-### `processors`
-
-Sorry! This field is currently undocumented.
-

@@ -14,21 +14,3 @@ bounds_check:
 Checks whether each message batch fits within certain boundaries, and drops
 batches that do not.
 
-## Fields
-
-### `max_part_size`
-
-Sorry! This field is currently undocumented.
-
-### `max_parts`
-
-Sorry! This field is currently undocumented.
-
-### `min_part_size`
-
-Sorry! This field is currently undocumented.
-
-### `min_parts`
-
-Sorry! This field is currently undocumented.
-

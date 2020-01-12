@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -22,6 +23,12 @@ import (
 //------------------------------------------------------------------------------
 
 func create(t, path string, resBytes []byte) {
+	if existing, err := ioutil.ReadFile(path); err == nil {
+		if bytes.Equal(existing, resBytes) {
+			fmt.Printf("Skipping '%v' at: %v\n", t, path)
+			return
+		}
+	}
 	if err := ioutil.WriteFile(path, resBytes, 0644); err != nil {
 		panic(err)
 	}

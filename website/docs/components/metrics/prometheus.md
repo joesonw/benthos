@@ -25,21 +25,3 @@ once Benthos shuts down. It is also possible to specify a
 The Push Gateway is useful for when Benthos instances are short lived. Do not
 include the "/metrics/jobs/..." path in the push URL.
 
-## Fields
-
-### `prefix`
-
-Sorry! This field is currently undocumented.
-
-### `push_interval`
-
-Sorry! This field is currently undocumented.
-
-### `push_job_name`
-
-Sorry! This field is currently undocumented.
-
-### `push_url`
-
-Sorry! This field is currently undocumented.
-

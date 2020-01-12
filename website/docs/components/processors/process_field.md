@@ -66,25 +66,3 @@ If the number of messages resulting from the processing steps does not match the
 original count then this processor fails and the messages continue unchanged.
 Therefore, you should avoid using batch and filter type processors in this list.
 
-## Fields
-
-### `codec`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-
-### `processors`
-
-Sorry! This field is currently undocumented.
-
-### `result_type`
-
-Sorry! This field is currently undocumented.
-

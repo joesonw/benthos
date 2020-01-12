@@ -32,17 +32,3 @@ flush_metrics dictates whether counter and timing metrics are reset to 0 after
 they are pushed out.
 
 
-## Fields
-
-### `flush_metrics`
-
-Sorry! This field is currently undocumented.
-
-### `push_interval`
-
-Sorry! This field is currently undocumented.
-
-### `static_fields`
-
-Sorry! This field is currently undocumented.
-

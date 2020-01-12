@@ -68,17 +68,3 @@ for a simpler use case you might instead wish to use the
 [`json_schema`](../conditions/README.md#json_schema) condition with a
 [`filter`](#filter).
 
-## Fields
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `schema`
-
-Sorry! This field is currently undocumented.
-
-### `schema_path`
-
-Sorry! This field is currently undocumented.
-

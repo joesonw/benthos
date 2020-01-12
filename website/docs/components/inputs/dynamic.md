@@ -26,13 +26,10 @@ already exists it will be changed.
 
 ### `inputs`
 
-Sorry! This field is currently undocumented.
-
+`object` A map of inputs to statically create.
 ### `prefix`
 
-Sorry! This field is currently undocumented.
-
+`string` A path prefix for HTTP endpoints that are registered.
 ### `timeout`
 
-Sorry! This field is currently undocumented.
-
+`string` The server side timeout of HTTP requests.

@@ -108,21 +108,3 @@ individual child outputs. If you have processors at both the broker level _and_
 on child outputs then the broker processors will be applied _before_ the child
 nodes processors.
 
-## Fields
-
-### `batching`
-
-Sorry! This field is currently undocumented.
-
-### `copies`
-
-Sorry! This field is currently undocumented.
-
-### `outputs`
-
-Sorry! This field is currently undocumented.
-
-### `pattern`
-
-Sorry! This field is currently undocumented.
-

@@ -84,25 +84,3 @@ using the [`process_map`](#process_map) processor:
       message.document: .
 ```
 
-## Fields
-
-### `cache`
-
-Sorry! This field is currently undocumented.
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

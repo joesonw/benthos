@@ -19,7 +19,7 @@ Subscribe to an NSQ instance topic and channel.`,
 			return sanitiseWithBatch(conf.NSQ, conf.NSQ.Batching)
 		},
 		FieldSpecs: docs.FieldSpecs{
-			"batching": docs.FieldDeprecated(),
+			docs.FieldDeprecated("batching"),
 		},
 	}
 }

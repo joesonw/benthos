@@ -94,17 +94,3 @@ attempt. These failed messages will continue through the pipeline unchanged, but
 can be dropped or placed in a dead letter queue according to your config, you
 can read about these patterns [here](../error_handling.md).
 
-## Fields
-
-### `max_parallel`
-
-Sorry! This field is currently undocumented.
-
-### `parallel`
-
-Sorry! This field is currently undocumented.
-
-### `request`
-
-Sorry! This field is currently undocumented.
-

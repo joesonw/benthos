@@ -28,9 +28,3 @@ this:
 }
 ```
 
-## Fields
-
-### `prefix`
-
-Sorry! This field is currently undocumented.
-

@@ -14,9 +14,3 @@ the path relative to the configured directory.
 This type currently offers no form of item expiry or garbage collection, and is
 intended to be used for development and debugging purposes only.
 
-## Fields
-
-### `directory`
-
-Sorry! This field is currently undocumented.
-

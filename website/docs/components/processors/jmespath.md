@@ -44,13 +44,3 @@ It is possible to create boolean queries with JMESPath, in order to filter
 messages with boolean queries please instead use the
 [`jmespath`](../conditions/README.md#jmespath) condition.
 
-## Fields
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `query`
-
-Sorry! This field is currently undocumented.
-

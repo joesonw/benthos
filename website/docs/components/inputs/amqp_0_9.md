@@ -3,6 +3,29 @@ title: amqp_0_9
 type: input
 ---
 
+
+import Tabs from '@theme/Tabs';
+
+<Tabs defaultValue="common" values={[
+  { label: 'Common', value: 'common', },
+  { label: 'Advanced', value: 'advanced', },
+]}>
+
+import TabItem from '@theme/TabItem';
+
+<TabItem value="common">
+
+```yaml
+amqp_0_9:
+  consumer_tag: benthos-consumer
+  prefetch_count: 10
+  queue: benthos-queue
+  url: amqp://guest:guest@localhost:5672/
+```
+
+</TabItem>
+<TabItem value="advanced">
+
 ```yaml
 amqp_0_9:
   bindings_declare: []
@@ -21,22 +44,11 @@ amqp_0_9:
   url: amqp://guest:guest@localhost:5672/
 ```
 
+</TabItem>
+</Tabs>
+
 Connects to an AMQP (0.91) queue. AMQP is a messaging protocol used by various
 message brokers, including RabbitMQ.
-
-It's possible for this input type to declare the target queue by setting
-`queue_declare.enabled` to `true`, if the queue already exists then
-the declaration passively verifies that they match the target fields.
-
-Similarly, it is possible to declare queue bindings by adding objects to the
-`bindings_declare` array. Binding declare objects take the form of:
-
-``` yaml
-{
-  "exchange": "benthos-exchange",
-  "key": "benthos-key"
-}
-```
 
 TLS is automatic when connecting to an `amqps` URL, but custom
 settings can be enabled in the `tls` section.
@@ -63,44 +75,82 @@ This input adds the following metadata fields to each message:
 - amqp_redelivered
 - amqp_exchange
 - amqp_routing_key
-- All existing message headers, including nested headers prefixed with the key
-  of their respective parent.
+- All existing message headers, including nested headers prefixed with the key of their respective parent.
 ```
 
 You can access these metadata fields using
-[function interpolation](../config_interpolation.md#metadata).
+[function interpolation](/docs/configuration/interpolation#metadata).
 
 ## Fields
 
-### `bindings_declare`
-
-Sorry! This field is currently undocumented.
-
-### `consumer_tag`
-
-Sorry! This field is currently undocumented.
-
-### `prefetch_count`
-
-Sorry! This field is currently undocumented.
-
-### `prefetch_size`
-
-Sorry! This field is currently undocumented.
-
-### `queue`
-
-Sorry! This field is currently undocumented.
-
-### `queue_declare`
-
-Sorry! This field is currently undocumented.
-
-### `tls`
-
-Sorry! This field is currently undocumented.
-
 ### `url`
 
-Sorry! This field is currently undocumented.
+`string` A URL to connect to.
+```yaml
+# Examples
 
+url: amqp://localhost:5672/
+
+url: amqps://guest:guest@localhost:5672/
+
+```
+### `queue`
+
+`string` An AMQP queue to consume from.
+### `queue_declare`
+
+`object` Allows you to passively declare the target queue. If the queue already exists
+then the declaration passively verifies that they match the target fields.
+```yaml
+# Examples
+
+queue_declare:
+  durable: false
+  enabled: true
+
+```
+### `bindings_declare`
+
+`array` Allows you to passively declare bindings for the target queue.
+```yaml
+# Examples
+
+bindings_declare:
+- exchange: foo
+  key: bar
+
+```
+### `consumer_tag`
+
+`string` A consumer tag.
+### `prefetch_count`
+
+`number` The maximum number of pending messages to have consumed at a time.
+### `prefetch_size`
+
+`number` The maximum amount of pending messages measured in bytes to have consumed at a time.
+### `tls`
+
+`object` Custom TLS settings can be used to override system defaults. This includes
+providing a collection of root certificate authorities, providing a list of
+client certificates to use for client verification and skipping certificate
+verification.
+
+Client certificates can either be added by file or by raw contents.
+```yaml
+# Examples
+
+tls:
+  client_certs:
+  - cert_file: ./example.pem
+    key_file: ./example.key
+  enabled: true
+
+tls:
+  client_certs:
+  - cert: foo
+    key: bar
+  enabled: true
+  skip_cert_verify: true
+
+```

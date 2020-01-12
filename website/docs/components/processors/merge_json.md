@@ -15,13 +15,3 @@ the batch. Merged parts are removed unless `retain_parts` is set to
 true. The new merged message will contain the metadata of the first part to be
 merged.
 
-## Fields
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `retain_parts`
-
-Sorry! This field is currently undocumented.
-

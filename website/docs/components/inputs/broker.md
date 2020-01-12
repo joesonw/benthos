@@ -54,30 +54,46 @@ set to '2', you would end up with two 'foo' inputs and two 'bar' inputs.
 
 ### Batching
 
-It's possible to configure a [batch policy](../batching.md#batch-policy) with a
-broker using the `batching` fields. When doing this the feeds from all
-child inputs are combined. Some inputs do not support broker based batching and
-specify this in their documentation.
+It's possible to configure a [batch policy](/docs/configuration/batching#batch-policy)
+with a broker using the `batching` fields. When doing this the feeds
+from all child inputs are combined. Some inputs do not support broker based
+batching and specify this in their documentation.
 
 ### Processors
 
-It is possible to configure [processors](../processors/README.md) at the broker
-level, where they will be applied to _all_ child inputs, as well as on the
-individual child inputs. If you have processors at both the broker level _and_
-on child inputs then the broker processors will be applied _after_ the child
-nodes processors.
+It is possible to configure [processors](/docs/components/processors/about) at
+the broker level, where they will be applied to _all_ child inputs, as well as
+on the individual child inputs. If you have processors at both the broker level
+_and_ on child inputs then the broker processors will be applied _after_ the
+child nodes processors.
 
 ## Fields
 
-### `batching`
-
-Sorry! This field is currently undocumented.
-
 ### `copies`
 
-Sorry! This field is currently undocumented.
-
+`number` Whatever is specified within `inputs` will be created this many times.
 ### `inputs`
 
-Sorry! This field is currently undocumented.
+`array` A list of inputs to create.
+### `batching`
 
+`object` Allows you to configure a [batching policy](/docs/configuration/batching).
+```yaml
+# Examples
+
+batching:
+  byte_size: 5000
+  period: 1s
+
+batching:
+  count: 10
+  period: 1s
+
+batching:
+  condition:
+    text:
+      arg: END BATCH
+      operator: contains
+  period: 1m
+
+```

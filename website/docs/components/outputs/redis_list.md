@@ -13,17 +13,3 @@ redis_list:
 Pushes messages onto the end of a Redis list (which is created if it doesn't
 already exist) using the RPUSH command.
 
-## Fields
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

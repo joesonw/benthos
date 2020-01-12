@@ -34,9 +34,3 @@ output:
     path: docs/${!metadata:kafka_key}/${!count:files}-${!timestamp_unix_nano}.tar.gz
 ```
 
-## Fields
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

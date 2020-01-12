@@ -15,25 +15,3 @@ nats_stream:
 
 Publish to a NATS Stream subject.
 
-## Fields
-
-### `client_id`
-
-Sorry! This field is currently undocumented.
-
-### `cluster_id`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `subject`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-

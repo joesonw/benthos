@@ -24,19 +24,16 @@ This input adds the following metadata fields to each message:
 ```
 
 You can access these metadata fields using
-[function interpolation](../config_interpolation.md#metadata).
+[function interpolation](/docs/configuration/interpolation#metadata).
 
 ## Fields
 
-### `directory`
-
-Sorry! This field is currently undocumented.
-
 ### `hosts`
 
-Sorry! This field is currently undocumented.
-
+`array` A list of target host addresses to connect to.
 ### `user`
 
-Sorry! This field is currently undocumented.
+`string` A user ID to connect as.
+### `directory`
 
+`string` The directory to consume from.

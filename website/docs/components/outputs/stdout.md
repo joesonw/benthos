@@ -18,9 +18,3 @@ foo\n
 bar\n
 baz\n\n
 
-## Fields
-
-### `delimiter`
-
-Sorry! This field is currently undocumented.
-

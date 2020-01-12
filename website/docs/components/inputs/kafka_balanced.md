@@ -16,33 +16,7 @@ import TabItem from '@theme/TabItem';
 <TabItem value="common">
 
 ```yaml
-kafka_balanced:
-  addresses:
-  - localhost:9092
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: ""
-  client_id: benthos_kafka_input
-  commit_period: 1s
-  consumer_group: benthos_consumer_group
-  fetch_buffer_cap: 256
-  group:
-    heartbeat_interval: 3s
-    rebalance_timeout: 60s
-    session_timeout: 10s
-  max_processing_period: 100ms
-  sasl:
-    enabled: false
-    password: ""
-    user: ""
-  start_from_oldest: true
-  target_version: 1.0.0
-  topics:
-  - benthos_stream
+kafka_balanced: {}
 ```
 
 </TabItem>
@@ -50,37 +24,11 @@ kafka_balanced:
 
 ```yaml
 kafka_balanced:
-  addresses:
-  - localhost:9092
-  batching:
-    byte_size: 0
-    condition:
-      type: static
-      static: false
-    count: 1
-    period: ""
-  client_id: benthos_kafka_input
-  commit_period: 1s
-  consumer_group: benthos_consumer_group
-  fetch_buffer_cap: 256
-  group:
-    heartbeat_interval: 3s
-    rebalance_timeout: 60s
-    session_timeout: 10s
-  max_processing_period: 100ms
-  sasl:
-    enabled: false
-    password: ""
-    user: ""
-  start_from_oldest: true
-  target_version: 1.0.0
   tls:
     client_certs: []
     enabled: false
     root_cas_file: ""
     skip_cert_verify: false
-  topics:
-  - benthos_stream
 ```
 
 </TabItem>
@@ -143,60 +91,17 @@ You can access these metadata fields using
 
 ## Fields
 
-### `addresses`
-
-Sorry! This field is currently undocumented.
-
-### `batching`
-
-Sorry! This field is currently undocumented.
-
-### `client_id`
-
-Sorry! This field is currently undocumented.
-
-### `commit_period`
-
-Sorry! This field is currently undocumented.
-
-### `consumer_group`
-
-Sorry! This field is currently undocumented.
-
-### `fetch_buffer_cap`
-
-Sorry! This field is currently undocumented.
-
-### `group`
-
-Sorry! This field is currently undocumented.
-
-### `max_processing_period`
-
-Sorry! This field is currently undocumented.
-
-### `sasl`
-
-Sorry! This field is currently undocumented.
-
-### `start_from_oldest`
-
-Sorry! This field is currently undocumented.
-
-### `target_version`
-
-Sorry! This field is currently undocumented.
-
 ### `tls`
 
-Custom TLS settings can be used to override system defaults. This includes
+`object` Custom TLS settings can be used to override system defaults. This includes
 providing a collection of root certificate authorities, providing a list of
 client certificates to use for client verification and skipping certificate
 verification.
 
 Client certificates can either be added by file or by raw contents.
-
 ```yaml
+# Examples
+
 tls:
   client_certs:
   - cert_file: ./example.pem
@@ -211,7 +116,3 @@ tls:
   skip_cert_verify: true
 
 ```
-### `topics`
-
-Sorry! This field is currently undocumented.
-

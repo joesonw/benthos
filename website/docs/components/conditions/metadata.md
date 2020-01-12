@@ -139,21 +139,3 @@ metadata:
 ```
 
 
-## Fields
-
-### `arg`
-
-Sorry! This field is currently undocumented.
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `part`
-
-Sorry! This field is currently undocumented.
-

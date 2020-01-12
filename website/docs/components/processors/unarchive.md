@@ -34,13 +34,3 @@ extracted filename.
 For the `json_map` format, a metadata field is added to each message
 called `archive_key` with the relevant key from the top-level map.
 
-## Fields
-
-### `format`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-

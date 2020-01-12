@@ -23,17 +23,3 @@ methods on the `/outputs/{output_id}` endpoint. When using POST the
 body of the request should be a JSON configuration for the output, if the output
 already exists it will be changed.
 
-## Fields
-
-### `outputs`
-
-Sorry! This field is currently undocumented.
-
-### `prefix`
-
-Sorry! This field is currently undocumented.
-
-### `timeout`
-
-Sorry! This field is currently undocumented.
-

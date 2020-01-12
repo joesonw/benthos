@@ -17,17 +17,3 @@ For at-least-once behaviour with NATS look at NATS Stream.
 This output will interpolate functions within the subject field, you
 can find a list of functions [here](../config_interpolation.md#functions).
 
-## Fields
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `subject`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-

@@ -21,17 +21,3 @@ instance of this input can utilise any number of threads within a
 
 If the delimiter field is left empty then line feed (\n) is used.
 
-## Fields
-
-### `delimiter`
-
-Sorry! This field is currently undocumented.
-
-### `max_buffer`
-
-Sorry! This field is currently undocumented.
-
-### `multipart`
-
-Sorry! This field is currently undocumented.
-

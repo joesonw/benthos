@@ -65,17 +65,3 @@ foo_created_at = "2018-12-18T11:57:32"
 
 Custom functions can also still be used with this codec.
 
-## Fields
-
-### `codec`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `program`
-
-Sorry! This field is currently undocumented.
-

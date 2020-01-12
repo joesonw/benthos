@@ -30,21 +30,3 @@ It is possible to configure an `open_message`, which when set to a
 non-empty string will be sent to the websocket server each time a connection is
 first established.
 
-## Fields
-
-### `basic_auth`
-
-Sorry! This field is currently undocumented.
-
-### `oauth`
-
-Sorry! This field is currently undocumented.
-
-### `open_message`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

@@ -58,17 +58,3 @@ If the message being processed looked like:
 
 Then the condition would pass.
 
-## Fields
-
-### `part`
-
-Sorry! This field is currently undocumented.
-
-### `schema`
-
-Sorry! This field is currently undocumented.
-
-### `schema_path`
-
-Sorry! This field is currently undocumented.
-

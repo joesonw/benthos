@@ -42,17 +42,3 @@ In order to create a unique `key` value per item you should use
 function interpolations described [here](../config_interpolation.md#functions).
 When sending batched messages the interpolations are performed per message part.
 
-## Fields
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `target`
-
-Sorry! This field is currently undocumented.
-

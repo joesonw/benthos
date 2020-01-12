@@ -28,29 +28,3 @@ services. It's also possible to set them explicitly at the component level,
 allowing you to transfer data across accounts. You can find out more
 [in this document](../aws.md).
 
-## Fields
-
-### `credentials`
-
-Sorry! This field is currently undocumented.
-
-### `endpoint`
-
-Sorry! This field is currently undocumented.
-
-### `max_in_flight`
-
-Sorry! This field is currently undocumented.
-
-### `region`
-
-Sorry! This field is currently undocumented.
-
-### `timeout`
-
-Sorry! This field is currently undocumented.
-
-### `topic_arn`
-
-Sorry! This field is currently undocumented.
-

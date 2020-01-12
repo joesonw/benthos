@@ -64,13 +64,3 @@ set via renaming.
 In order to see logs breaking down which metrics are registered and whether they
 are renamed enable logging at the TRACE level.
 
-## Fields
-
-### `by_regexp`
-
-Sorry! This field is currently undocumented.
-
-### `child`
-
-Sorry! This field is currently undocumented.
-

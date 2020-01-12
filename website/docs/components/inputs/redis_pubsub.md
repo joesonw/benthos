@@ -25,17 +25,3 @@ patterns in your channel names. For example:
 Use `\` to escape special characters if you want to match them
 verbatim.
 
-## Fields
-
-### `channels`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-
-### `use_patterns`
-
-Sorry! This field is currently undocumented.
-

@@ -33,17 +33,3 @@ memory:
 These values can be overridden during execution, at which point the configured
 TTL is respected as usual.
 
-## Fields
-
-### `compaction_interval`
-
-Sorry! This field is currently undocumented.
-
-### `init_values`
-
-Sorry! This field is currently undocumented.
-
-### `ttl`
-
-Sorry! This field is currently undocumented.
-

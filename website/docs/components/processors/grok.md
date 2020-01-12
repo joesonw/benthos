@@ -31,33 +31,3 @@ of the input. However, this property often makes it less performant than pcre
 based implementations of grok. For more information see
 [https://swtch.com/~rsc/regexp/regexp1.html](https://swtch.com/~rsc/regexp/regexp1.html).
 
-## Fields
-
-### `named_captures_only`
-
-Sorry! This field is currently undocumented.
-
-### `output_format`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `pattern_definitions`
-
-Sorry! This field is currently undocumented.
-
-### `patterns`
-
-Sorry! This field is currently undocumented.
-
-### `remove_empty_values`
-
-Sorry! This field is currently undocumented.
-
-### `use_default_patterns`
-
-Sorry! This field is currently undocumented.
-

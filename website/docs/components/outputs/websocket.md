@@ -21,17 +21,3 @@ websocket:
 
 Sends messages to an HTTP server via a websocket connection.
 
-## Fields
-
-### `basic_auth`
-
-Sorry! This field is currently undocumented.
-
-### `oauth`
-
-Sorry! This field is currently undocumented.
-
-### `url`
-
-Sorry! This field is currently undocumented.
-

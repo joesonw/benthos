@@ -30,21 +30,3 @@ specifies how the source documents are encoded.
 Attempts to convert JSON documents into Avro documents according to the
 specified encoding.
 
-## Fields
-
-### `encoding`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `schema`
-
-Sorry! This field is currently undocumented.
-

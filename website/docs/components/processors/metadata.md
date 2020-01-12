@@ -55,21 +55,3 @@ Removes all metadata values from the message where the key is prefixed with the
 value provided. If the value field is left empty the key value will instead be
 used as the prefix.
 
-## Fields
-
-### `key`
-
-Sorry! This field is currently undocumented.
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

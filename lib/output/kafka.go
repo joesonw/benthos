@@ -43,7 +43,7 @@ is empty then a random partition is chosen.
 		Async:   true,
 		Batches: true,
 		FieldSpecs: docs.FieldSpecs{
-			"round_robin_partitions": docs.FieldDeprecated(),
+			docs.FieldDeprecated("round_robin_partitions"),
 		},
 	}
 }

@@ -36,13 +36,3 @@ stages will be skipped.
 You can read more about workflows in Benthos
 [in this document](../workflows.md).
 
-## Fields
-
-### `meta_path`
-
-Sorry! This field is currently undocumented.
-
-### `stages`
-
-Sorry! This field is currently undocumented.
-

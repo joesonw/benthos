@@ -18,17 +18,3 @@ The field `max_buffer` specifies the maximum amount of memory to
 allocate for buffering lines of data, this must exceed the largest expected
 message size.
 
-## Fields
-
-### `address`
-
-Sorry! This field is currently undocumented.
-
-### `delimiter`
-
-Sorry! This field is currently undocumented.
-
-### `max_buffer`
-
-Sorry! This field is currently undocumented.
-

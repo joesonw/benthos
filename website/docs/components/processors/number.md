@@ -46,17 +46,3 @@ Adds a value.
 
 Subtracts a value.
 
-## Fields
-
-### `operator`
-
-Sorry! This field is currently undocumented.
-
-### `parts`
-
-Sorry! This field is currently undocumented.
-
-### `value`
-
-Sorry! This field is currently undocumented.
-

@@ -29,33 +29,3 @@ websocket of messages for each request respectively.
 When messages are batched the `path` endpoint encodes the batch
 according to [RFC1341](https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html).
 
-## Fields
-
-### `address`
-
-Sorry! This field is currently undocumented.
-
-### `cert_file`
-
-Sorry! This field is currently undocumented.
-
-### `key_file`
-
-Sorry! This field is currently undocumented.
-
-### `path`
-
-Sorry! This field is currently undocumented.
-
-### `stream_path`
-
-Sorry! This field is currently undocumented.
-
-### `timeout`
-
-Sorry! This field is currently undocumented.
-
-### `ws_path`
-
-Sorry! This field is currently undocumented.
-

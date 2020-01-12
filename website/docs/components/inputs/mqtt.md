@@ -33,33 +33,3 @@ This input adds the following metadata fields to each message:
 You can access these metadata fields using
 [function interpolation](../config_interpolation.md#metadata).
 
-## Fields
-
-### `clean_session`
-
-Sorry! This field is currently undocumented.
-
-### `client_id`
-
-Sorry! This field is currently undocumented.
-
-### `password`
-
-Sorry! This field is currently undocumented.
-
-### `qos`
-
-Sorry! This field is currently undocumented.
-
-### `topics`
-
-Sorry! This field is currently undocumented.
-
-### `urls`
-
-Sorry! This field is currently undocumented.
-
-### `user`
-
-Sorry! This field is currently undocumented.
-

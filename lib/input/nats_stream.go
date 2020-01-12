@@ -42,7 +42,7 @@ You can access these metadata fields using
 			return sanitiseWithBatch(conf.NATSStream, conf.NATSStream.Batching)
 		},
 		FieldSpecs: docs.FieldSpecs{
-			"batching": docs.FieldDeprecated(),
+			docs.FieldDeprecated("batching"),
 		},
 	}
 }
