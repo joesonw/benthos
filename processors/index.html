@@ -1039,28 +1039,30 @@ collision).</p>
 <p>Removes a key identified by the dot path. If the path does not exist this is a
 no-op.</p>
 <p><code>explode</code></p>
-<p>Explodes an array within a JSON document to create an array containing objects
-matching the original document where the target array field of each element is
-the element of the exploded array.</p>
-<p>It is then possible to expand the array to create individual messages per
-element with the <a href="#unarchive"><code>unarchive</code> processor</a>.</p>
-<p>For example, given the following input document:</p>
-<pre><code class="json">{&quot;id&quot;:1,&quot;value&quot;:[&quot;foo&quot;,&quot;bar&quot;,&quot;baz&quot;]}
-</code></pre>
-
-<p>We can explode the elements of <code>value</code> with:</p>
+<p>Explodes an array or object within a JSON document.</p>
+<p>Exploding arrays results in a root level array containing elements matching the
+original document, where the target field of each element is an element of the
+exploded array.</p>
+<p>Exploding objects results in a root level object where the keys match the target
+object, and the values match the original document but with the target field
+replaced by the exploded value.</p>
+<p>It is then possible to expand the result to create individual messages per
+element with the <a href="#unarchive"><code>unarchive</code> processor</a> <code>json_array</code> or
+<code>json_object</code> format..</p>
+<p>For example, given the following config:</p>
 <pre><code class="yaml">json:
   operator: explode
   path: value
 </code></pre>
 
-<p>To create:</p>
-<pre><code class="json">[{&quot;id&quot;:1,&quot;value&quot;:&quot;foo&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;bar&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;baz&quot;}]
+<p>And two input documents:</p>
+<pre><code class="json">{&quot;id&quot;:1,&quot;value&quot;:[&quot;foo&quot;,&quot;bar&quot;,&quot;baz&quot;]}
+{&quot;id&quot;:1,&quot;value&quot;:{&quot;foo&quot;:2,&quot;bar&quot;:[3,4],&quot;baz&quot;:{&quot;bev&quot;:5}}}
 </code></pre>
 
-<p>Which can be further exploded into individual messages with:</p>
-<pre><code class="yaml">unarchive:
-  format: json_array
+<p>The respective results would be:</p>
+<pre><code class="json">[{&quot;id&quot;:1,&quot;value&quot;:&quot;foo&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;bar&quot;},{&quot;id&quot;:1,&quot;value&quot;:&quot;baz&quot;}]
+{&quot;foo&quot;:{&quot;id&quot;:1,&quot;value&quot;:2},&quot;bar&quot;:{&quot;id&quot;:1,&quot;value&quot;:[3,4]},&quot;baz&quot;:{&quot;id&quot;:1,&quot;value&quot;:{&quot;bev&quot;:5}}}
 </code></pre>
 
 <p><code>move</code></p>
@@ -1975,7 +1977,7 @@ unarchive:
 
 <p>Unarchives messages according to the selected archive format into multiple
 messages within a batch. Supported archive formats are:
-<code>tar</code>, <code>zip</code>, <code>binary</code>, <code>lines</code>, <code>json_documents</code> and <code>json_array</code>.</p>
+<code>tar</code>, <code>zip</code>, <code>binary</code>, <code>lines</code>, <code>json_documents</code>, <code>json_array</code> and <code>json_map</code>.</p>
 <p>When a message is unarchived the new messages replaces the original message in
 the batch. Messages that are selected but fail to unarchive (invalid format)
 will remain unchanged in the message batch but will be flagged as having failed.</p>
@@ -1984,9 +1986,13 @@ of concatenated JSON documents. Each parsed document is expanded into a new
 message.</p>
 <p>The <code>json_array</code> format attempts to parse the message as a JSON array
 and for each element of the array expands its contents into a new message.</p>
+<p>The <code>json_map</code> format attempts to parse the message as a JSON map
+and for each element of the map expands its contents into a new message.</p>
 <p>For the unarchive formats that contain file information (tar, zip), a metadata
 field is added to each message called <code>archive_filename</code> with the
 extracted filename.</p>
+<p>For the <code>json_map</code> format, a metadata field is added to each message
+called <code>archive_key</code> with the relevant key from the top-level map.</p>
 <hr />
 <h2 id="while"><code>while</code></h2>
 <pre><code class="yaml">type: while
