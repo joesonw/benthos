@@ -117,6 +117,9 @@ func (c *ComponentSpec) createConfigs(fullConfigExample interface{}) (
 				c.Name: advancedConfig,
 			})
 		}
+		if err == nil {
+			advancedConfig = fullConfigExample
+		}
 		var commonConfig interface{}
 		if err == nil {
 			commonConfig, err = c.Fields.ConfigCommon(fullConfigExample)
@@ -126,6 +129,9 @@ func (c *ComponentSpec) createConfigs(fullConfigExample interface{}) (
 				c.Name: commonConfig,
 			})
 		}
+	}
+	if err != nil {
+		panic(err)
 	}
 	if err != nil || len(c.Fields) == 0 {
 		if advancedConfigBytes, err = config.MarshalYAML(map[string]interface{}{

@@ -5,10 +5,10 @@ type: input
 
 ```yaml
 hdfs:
-  directory: ""
   hosts:
   - localhost:9000
   user: benthos_hdfs
+  directory: ""
 ```
 
 Reads files from a HDFS directory, where each discrete file will be consumed as

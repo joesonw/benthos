@@ -3,21 +3,48 @@ title: http_server
 type: input
 ---
 
+
+import Tabs from '@theme/Tabs';
+
+<Tabs defaultValue="common" values={[
+  { label: 'Common', value: 'common', },
+  { label: 'Advanced', value: 'advanced', },
+]}>
+
+import TabItem from '@theme/TabItem';
+
+<TabItem value="common">
+
 ```yaml
 http_server:
   address: ""
+  path: /post
+  ws_path: /post/ws
+  timeout: 5s
+  rate_limit: ""
+```
+
+</TabItem>
+<TabItem value="advanced">
+
+```yaml
+http_server:
+  address: ""
+  path: /post
+  ws_path: /post/ws
+  ws_welcome_message: ""
+  ws_rate_limit_message: ""
+  timeout: 5s
+  rate_limit: ""
   cert_file: ""
   key_file: ""
-  path: /post
-  rate_limit: ""
   sync_response:
     headers:
       Content-Type: application/octet-stream
-  timeout: 5s
-  ws_path: /post/ws
-  ws_rate_limit_message: ""
-  ws_welcome_message: ""
 ```
+
+</TabItem>
+</Tabs>
 
 Receive messages POSTed over HTTP(S). HTTP 2.0 is supported when using TLS,
 which is enabled when key and cert files are specified.
@@ -81,3 +108,38 @@ This input adds the following metadata fields to each message:
 You can access these metadata fields using
 [function interpolation](/docs/configuration/interpolation#metadata).
 
+## Fields
+
+### `address`
+
+`string` An alternative address to host from. If left empty the service wide address is used.
+### `path`
+
+`string` The endpoint path to listen for POST requests.
+### `ws_path`
+
+`string` The endpoint path to create websocket connections from.
+### `ws_welcome_message`
+
+`string` An optional message to deliver to fresh websocket connections.
+### `ws_rate_limit_message`
+
+`string` An optional message to delivery to websocket connections that are rate limited.
+### `timeout`
+
+`string` Timeout for requests. If a consumed messages takes longer than this to be delivered the connection is closed, but the message may still be delivered.
+### `rate_limit`
+
+`string` An optional [rate limit](/docs/components/rate_limits/about) to throttle requests by.
+### `cert_file`
+
+`string` Only valid with a custom `address`.
+### `key_file`
+
+`string` Only valid with a custom `address`.
+### `sync_response`
+
+`object` Customise messages returned via [synchronous responses](/docs/guides/sync_responses).
+### `sync_response.headers`
+
+`object` Specify headers to return with synchronous responses.

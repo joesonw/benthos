@@ -17,10 +17,10 @@ import TabItem from '@theme/TabItem';
 
 ```yaml
 amqp_0_9:
+  url: amqp://guest:guest@localhost:5672/
+  queue: benthos-queue
   consumer_tag: benthos-consumer
   prefetch_count: 10
-  queue: benthos-queue
-  url: amqp://guest:guest@localhost:5672/
 ```
 
 </TabItem>
@@ -28,20 +28,20 @@ amqp_0_9:
 
 ```yaml
 amqp_0_9:
-  bindings_declare: []
-  consumer_tag: benthos-consumer
-  prefetch_count: 10
-  prefetch_size: 0
+  url: amqp://guest:guest@localhost:5672/
   queue: benthos-queue
   queue_declare:
     durable: true
     enabled: false
+  bindings_declare: []
+  consumer_tag: benthos-consumer
+  prefetch_count: 10
+  prefetch_size: 0
   tls:
     client_certs: []
     enabled: false
     root_cas_file: ""
     skip_cert_verify: false
-  url: amqp://guest:guest@localhost:5672/
 ```
 
 </TabItem>

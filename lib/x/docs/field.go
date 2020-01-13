@@ -1,6 +1,10 @@
 package docs
 
-import "gopkg.in/yaml.v3"
+import (
+	"fmt"
+
+	"gopkg.in/yaml.v3"
+)
 
 //------------------------------------------------------------------------------
 
@@ -104,52 +108,72 @@ type FieldSpecs []FieldSpec
 
 // ConfigCommon takes a sanitised configuration of a component, a map of field
 // docs, and removes all fields that aren't common or are deprecated.
-func (f FieldSpecs) ConfigCommon(config interface{}) (map[string]interface{}, error) {
-	return f.configFiltered(config, func(f FieldSpec) bool {
-		return !(f.Advanced || f.Deprecated)
+func (f FieldSpecs) ConfigCommon(config interface{}) (interface{}, error) {
+	return f.configFiltered(config, func(field FieldSpec) bool {
+		return !(field.Advanced || field.Deprecated)
 	})
 }
 
 // ConfigAdvanced takes a sanitised configuration of a component, a map of field
 // docs, and removes all fields that are deprecated.
-func (f FieldSpecs) ConfigAdvanced(config interface{}) (map[string]interface{}, error) {
-	return f.configFiltered(config, func(f FieldSpec) bool {
-		return !f.Deprecated
+func (f FieldSpecs) ConfigAdvanced(config interface{}) (interface{}, error) {
+	return f.configFiltered(config, func(field FieldSpec) bool {
+		return !field.Deprecated
 	})
 }
 
-func (f FieldSpecs) configFiltered(config interface{}, filter func(f FieldSpec) bool) (map[string]interface{}, error) {
-	var asMap map[string]interface{}
+func (f FieldSpecs) configFiltered(config interface{}, filter func(f FieldSpec) bool) (interface{}, error) {
+	var asNode yaml.Node
 	var ok bool
-	if asMap, ok = config.(map[string]interface{}); !ok {
+	if asNode, ok = config.(yaml.Node); !ok {
 		rawBytes, err := yaml.Marshal(config)
 		if err != nil {
-			return nil, err
+			return asNode, err
 		}
-		if err = yaml.Unmarshal(rawBytes, &asMap); err != nil {
-			return nil, err
+		if err = yaml.Unmarshal(rawBytes, &asNode); err != nil {
+			return asNode, err
 		}
 	}
+	if asNode.Kind != yaml.DocumentNode {
+		return asNode, fmt.Errorf("expected document node kind: %v", asNode.Kind)
+	}
+	if asNode.Content[0].Kind != yaml.MappingNode {
+		return asNode, fmt.Errorf("expected mapping node child kind: %v", asNode.Content[0].Kind)
+	}
+	newChild, err := f.configFilteredFromNode(*asNode.Content[0], filter)
+	if err != nil {
+		return asNode, err
+	}
+	return &newChild, nil
+}
 
-	newMap := map[string]interface{}{}
-	acceptedKeys := map[string]FieldSpec{}
-	for _, v := range f {
-		if filter(v) {
-			acceptedKeys[v.Name] = v
+func (f FieldSpecs) configFilteredFromNode(node yaml.Node, filter func(FieldSpec) bool) (*yaml.Node, error) {
+	newNodes := []*yaml.Node{}
+	for _, field := range f {
+		if !filter(field) {
+			continue
 		}
-	}
-	for k, v := range asMap {
-		if field, exists := acceptedKeys[k]; exists {
-			if len(field.Children) > 0 {
-				var err error
-				if v, err = field.Children.configFiltered(v, filter); err != nil {
-					return nil, err
+	searchLoop:
+		for i := 0; i < len(node.Content); i += 2 {
+			if node.Content[i].Value == field.Name {
+				nextNode := node.Content[i+1]
+				if len(field.Children) > 0 {
+					if nextNode.Kind != yaml.MappingNode {
+						return nil, fmt.Errorf("expected mapping node kind: %v", nextNode.Kind)
+					}
+					var err error
+					if nextNode, err = field.Children.configFilteredFromNode(*nextNode, filter); err != nil {
+						return nil, err
+					}
 				}
+				newNodes = append(newNodes, node.Content[i])
+				newNodes = append(newNodes, nextNode)
+				break searchLoop
 			}
-			newMap[k] = v
 		}
 	}
-	return newMap, nil
+	node.Content = newNodes
+	return &node, nil
 }
 
 //------------------------------------------------------------------------------

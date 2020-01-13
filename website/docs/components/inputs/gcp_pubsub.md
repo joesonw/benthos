@@ -5,10 +5,10 @@ type: input
 
 ```yaml
 gcp_pubsub:
-  max_outstanding_bytes: 1000000000
-  max_outstanding_messages: 1000
   project: ""
   subscription: ""
+  max_outstanding_messages: 1000
+  max_outstanding_bytes: 1000000000
 ```
 
 Consumes messages from a GCP Cloud Pub/Sub subscription.

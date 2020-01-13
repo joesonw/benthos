@@ -5,6 +5,8 @@ type: input
 
 ```yaml
 broker:
+  copies: 1
+  inputs: []
   batching:
     byte_size: 0
     condition:
@@ -12,8 +14,6 @@ broker:
       static: false
     count: 1
     period: ""
-  copies: 1
-  inputs: []
 ```
 
 The broker type allows you to combine multiple inputs, where each input will be

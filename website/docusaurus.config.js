@@ -14,7 +14,7 @@ module.exports = {
       title: 'Benthos',
       logo: {
         alt: 'Benthos Blobfish',
-        src: 'img/nav-logo.svg',
+        src: 'img/logo.svg',
       },
       links: [
         {to: 'docs/about', label: 'Docs', position: 'left'},

@@ -25,8 +25,8 @@ func httpClientSpecs() docs.FieldSpecs {
 		docs.FieldAdvanced("multipart", "When running in stream mode sets whether an empty line indicates the end of a message batch, and only then is the batch flushed downstream.").HasType("bool"),
 		docs.FieldAdvanced("max_buffer", "Must be larger than the largest line of the stream.").HasType("number"),
 		docs.FieldAdvanced("delimiter", `
-	A string that indicates the end of a message within the stream. If left empty
-	then line feed (\n) is used.`).HasType("string"),
+A string that indicates the end of a message within the stream. If left empty
+then line feed (\n) is used.`).HasType("string"),
 	}
 
 	specs := append(client.FieldSpecs(),

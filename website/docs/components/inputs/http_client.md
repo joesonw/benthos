@@ -17,16 +17,16 @@ import TabItem from '@theme/TabItem';
 
 ```yaml
 http_client:
+  url: http://localhost:4195/get
+  verb: GET
   headers:
     Content-Type: application/octet-stream
-  payload: ""
   rate_limit: ""
+  timeout: 5s
+  payload: ""
   stream:
     enabled: false
     reconnect: true
-  timeout: 5s
-  url: http://localhost:4195/get
-  verb: GET
 ```
 
 </TabItem>
@@ -34,17 +34,10 @@ http_client:
 
 ```yaml
 http_client:
-  backoff_on:
-  - 429
-  basic_auth:
-    enabled: false
-    password: ""
-    username: ""
-  copy_response_headers: false
-  drop_on: []
+  url: http://localhost:4195/get
+  verb: GET
   headers:
     Content-Type: application/octet-stream
-  max_retry_backoff: 300s
   oauth:
     access_token: ""
     access_token_secret: ""
@@ -52,25 +45,32 @@ http_client:
     consumer_secret: ""
     enabled: false
     request_url: ""
-  payload: ""
-  rate_limit: ""
-  retries: 3
-  retry_period: 1s
-  stream:
-    delimiter: ""
+  basic_auth:
     enabled: false
-    max_buffer: 1e+06
-    multipart: false
-    reconnect: true
-  successful_on: []
-  timeout: 5s
+    password: ""
+    username: ""
   tls:
     client_certs: []
     enabled: false
     root_cas_file: ""
     skip_cert_verify: false
-  url: http://localhost:4195/get
-  verb: GET
+  copy_response_headers: false
+  rate_limit: ""
+  timeout: 5s
+  retry_period: 1s
+  max_retry_backoff: 300s
+  retries: 3
+  backoff_on:
+  - 429
+  drop_on: []
+  successful_on: []
+  payload: ""
+  stream:
+    enabled: false
+    reconnect: true
+    multipart: false
+    max_buffer: 1e+06
+    delimiter: ""
 ```
 
 </TabItem>
@@ -219,5 +219,5 @@ tls:
 `number` Must be larger than the largest line of the stream.
 ### `stream.delimiter`
 
-`string` 	A string that indicates the end of a message within the stream. If left empty
-	then line feed (\n) is used.
+`string` A string that indicates the end of a message within the stream. If left empty
+then line feed (\n) is used.

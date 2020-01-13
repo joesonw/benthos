@@ -5,10 +5,10 @@ type: input
 
 ```yaml
 file:
-  delimiter: ""
-  max_buffer: 1e+06
-  multipart: false
   path: ""
+  multipart: false
+  max_buffer: 1e+06
+  delimiter: ""
 ```
 
 Reads a file, where each line is processed as an individual message.
